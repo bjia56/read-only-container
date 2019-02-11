@@ -26,7 +26,7 @@ In each of these situations, the typical solution is to create a sort of restric
 
 In preparation for our research, we sought out existing literature on existing application isolation techniques. We discovered a diverse set of techniques used to create isolated and restricted environments for running untrusted code. Our findings are listed below in this section.
 \newline\newline
-A prior survey of isolation systems and techniques from 2009 \cite{viswanathan2009survey} categorizes isolation techniques into the following categories:
+A prior survey of isolation systems and techniques from 2009 \cite{viswanathan2009isolation} categorizes isolation techniques into the following categories:
 \begin{enumerate}
     \item Language-based isolation (e.g. type safety and compiler verification)
     \item Sandbox-based isolation (e.g. interposition between an application and the operating system's syscalls)
@@ -37,50 +37,50 @@ A prior survey of isolation systems and techniques from 2009 \cite{viswanathan20
 \end{enumerate}
 The taxonomy of isolation techniques and a list of surveyed systems presented in the aforementioned paper provide a useful categorization of restricted computing environment techniques and useful comparisons of the taxonomic categories listed above. For the purposes of our research, we are mainly interested in sandbox-based and virtual machine-based isolation.
 \newline\newline
-Another survey of virtualization technologies for untrusted code execution from 2012 \cite{wen2012survey} notes that untrusted code is usually executed in one of four categories:
+Another survey of virtualization technologies for untrusted code execution from 2012 \cite{wen2012virtualization} notes that untrusted code is usually executed in one of four categories:
 \begin{enumerate}
     \item Application-level sandboxing through programming language features, kernel interposition, or resource access control policies
     \item Simulating an operating system environment through virtualizing an operating system's runtime API
     \item Containerizing an execution environment through kernel-supported isolation of all resources required by a process
     \item Virtualizing hardware and isolating full operating systems through Type I and Type II virtual machine monitors
 \end{enumerate}
-This survey by Wen et al. presents various examples of each type of restricted computing environment and discusses their strengths and weaknesses, however fails to present quantitative metrics to compare the technologies listed. Indeed, the research presented by Viswanathan and Neuman \cite{viswanathan2009survey} also fails to present any sort of benchmarking for the surveyed technologies.
+This survey by Wen et al. presents various examples of each type of restricted computing environment and discusses their strengths and weaknesses, however fails to present quantitative metrics to compare the technologies listed. Indeed, the research presented by Viswanathan and Neuman \cite{viswanathan2009isolation} also fails to present any sort of benchmarking for the surveyed technologies.
 \newline\newline
 Although useful in providing categorization and terminology, we find these two surveys to be dated, as newer forms of restricted computing environments have been developed in recent years. Our own literature review presents the following list of technologies (some of which have been discussed in the prior two surveys), to be expanded upon in following subsections:
 \begin{enumerate}
     \item FreeBSD Jails \cite{kamp2000jails}
-    \item File Monitoring and Access Control (FMAC) \cite{prevelakis2001sandboxing}
+    \item File Monitoring and Access Control (FMAC) \cite{prevelakis2001fmac}
     \item Vx32 \cite{ford2008vx32}
     \item Native Client \cite{yee2009native}
     \item Apiary \cite{potter2010apiary}
-    \item MBOX \cite{kim2013practical}
-    \item System sandbox (for Microsoft Windows) \cite{vokorokos2015application}
+    \item MBOX \cite{kim2013mbox}
+    \item System sandbox (for Microsoft Windows) \cite{vokorokos2015sandboxMSWIN}
 \end{enumerate}
 
-\section*{2.1 FreeBSD Jails}
+\subsection*{2.1 FreeBSD Jails}
 
 The FreeBSD jail concept \cite{kamp2000jails} introduces a method of providing restricted computing environments through kernel-level partitioning of processes into ``jails.'' A process in ``jail'' sees a traditional FreeBSD environment with traditional resources (e.g. processes, file systems, networking), but restricts the privileged, root-level operations the process can perform (e.g. sending signals to processes outside of the jail). This functionality is implemented through the \texttt{jail} syscalls, requiring modifications to the FreeBSD kernel, and takes advantage of the functionality of \texttt{chroot}, with modifications, to protect the filesystem.
 
-\section*{2.2 File Monitoring and Access Control (FMAC)}
+\subsection*{2.2 File Monitoring and Access Control (FMAC)}
 
-Prevelakis and Spinellis \cite{prevelakis2001sandboxing} present a filesystem sandboxing solution by isolating a process' access to the filesystem through a File Monitoring and Access Control (FMAC) tool, which presents a mirror of the local filesystem. The sandbox mounts the tool as a filesystem and uses \texttt{chroot} to restrict a process to only view the isolated file system. Access control policies can be set up to allow the application to perform certain read or write operations on select files in the mirrored filesystem, effectively protecting the local filesystem from unauthorized access and modification.
+Prevelakis and Spinellis \cite{prevelakis2001fmac} present a filesystem sandboxing solution by isolating a process' access to the filesystem through a File Monitoring and Access Control (FMAC) tool, which presents a mirror of the local filesystem. The sandbox mounts the tool as a filesystem and uses \texttt{chroot} to restrict a process to only view the isolated file system. Access control policies can be set up to allow the application to perform certain read or write operations on select files in the mirrored filesystem, effectively protecting the local filesystem from unauthorized access and modification.
 
-\section*{2.3 Vx32}
+\subsection*{2.3 Vx32}
 
 Ford and Cox \cite{ford2008vx32} present a virtual machine for the 32-bit x86 instruction set, Vx32, as a library on which to build sandboxed applications. The virtual machine utilizes the x86 processor's segmentation hardware to sandbox guest data and employs dynamic translation to rewrite privileged instructions and sandbox guest code. Vx32 runs completely in user-mode and requires no modifications to the host kernel, although it has hardware, host kernel, and guest code requirements.
 
-\section*{2.4 Native Client}
+\subsection*{2.4 Native Client}
 
 Google's Native Client \cite{yee2009native} is a sandbox for untrusted x86 code, specifically targeted at binary code to be executed in-browser. Native Client targets browser-based applications with computation that require native performance and is built from two layers of sandboxes: The inner sandbox performs binary analysis to ensure code is free from unsafe machine instructions and uses x86 segmented memory to restrict data access, while the outer sandbox performs kernel interposition to restrict access to syscalls.
 
-\section*{2.5 Apiary}
+\subsection*{2.5 Apiary}
 
-\section*{2.6 MBOX}
+\subsection*{2.6 MBOX}
 
-\section*{2.7 System sandbox (for Microsoft Windows}
+\subsection*{2.7 System sandbox (for Microsoft Windows)}
 
 \section*{3. Research Methodology}
-We plan to evaluate a sample of widely-used sandboxes ranging from lightweight \texttt{chroot}-based jails to full-blown virtual machines. The hard (quantitative) metrics in our evaluation are: startup time, execution speed, syscall speed, memory overhead. The soft metrics are: hardware requirements, software/OS requirements, ease of setup and launch, granularity of configuration, configuration management. Ideally, the soft metrics will provide some context for the quantitative differences between the isolation techniques and reveal tradeoffs between functionality and performance. 
+We plan to evaluate a sample of widely-used sandboxes ranging from lightweight \texttt{chroot}-based jails to full-blown virtual machines. The hard (quantitative) metrics in our evaluation are: startup time, execution speed, syscall speed, memory overhead. The soft metrics are: hardware requirements, software/OS requirements, ease of setup and launch, granularity of configuration, configuration management. Ideally, the soft metrics will provide some context for the quantitative differences between the isolation techniques and reveal tradeoffs between functionality and performance.
 Based on our literature review, we found these sandboxes to be a representative sample of current sandboxing methods:\vspace{0.5em}
 {\small
 \begin{itemize}
@@ -96,7 +96,7 @@ Based on our literature review, we found these sandboxes to be a representative 
 }
 To collect hard metrics, we will run benchmarks that stress CPU and memory resources. We will then analyze the results and examine the implementations of the sandboxes to explain measurement trends. This may be repeated in an iterative process, for example running the same benchmark on increasingly stricter security configurations of each sandbox. As part of the measurement process, we will collect experience using these sandboxes to qualify our soft metrics.
 \subsubsection*{Required Hardware}
-Our tests will be performed on x86-64 Linux machines (which will require access to the CLIC lab, and maybe CRF accounts). We will use the same OS distribution when possible. In the case of FreeBSD jail running on FreeBSD or minijail running on Chrome OS, for example, we will account for OS differences in our analysis. 
+Our tests will be performed on x86-64 Linux machines (which will require access to the CLIC lab, and maybe CRF accounts). We will use the same OS distribution when possible. In the case of FreeBSD jail running on FreeBSD or minijail running on Chrome OS, for example, we will account for OS differences in our analysis.
 \subsubsection*{Required Software}
 We would want to use the standard SPEC CPU2017 benchmark. However, we are not sure if it is practical given its cost (\$1000). Other possibilities include using open-source benchmarks such as PXZ and sysbench. These were used in a 2014 performance study on containers and VMs by IBM Research ~\cite{felter2014docker}.\\
 For measuring startup time and syscall time, we will use the \emph{perf} tool.
