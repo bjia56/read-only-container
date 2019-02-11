@@ -3,7 +3,7 @@
 
 \begin{document}
 
-\title{Project Proposal: Performance Measurement of Sandboxing Techniques}
+\title{Project Proposal: A Survey and Performance Comparisons of Techniques to Construct Restricted Computing Environments}
 
 \author{Brett Jia \hspace{1em} Jennifer Bi}
 
@@ -11,7 +11,7 @@
 
 \section*{Abstract}
 
-In modern computer systems, users and researchers often need to run untrusted and potentially malicious code, yet would like to protect their systems from harm. This is often achieved by creating a restricted "sandbox" environment in which the untrusted code then executes safely. We seek to survey the current state of sandboxing technologies and present a comparison of various sandboxing programs.
+In modern computer systems, users and researchers often need to run untrusted and potentially malicious code, yet would like to protect their systems from harm. This is often achieved by creating a restricted environment in which the untrusted code then executes safely. We seek to survey the current state of restricted computing technologies and present a comparison of various programs that provide this restricted computing environment.
 
 \section*{1. Introduction}
 
@@ -19,9 +19,19 @@ Despite the best efforts of systems and hardware designers, a major weakness of 
 \newline\newline
 While many software applications (such as word processors and web browsers) are now distributed through secure channels and feature cryptographic signatures from trusted entities, there are still instances where users want to run untrusted code, but still keep their local system safe from any malicious side effects. For example, web scripting languages such as JavaScript are present in a large majority of websites, which run the untrusted scripts immediately as a webpage loads. As users cannot be expected to disable JavaScript completely (thus rendering most websites unusable), browser designers are forced to design policies and mechanisms to isolate this untrusted code from the rest of the computer. In another case, a security researcher may want to run malware on a local computer for testing and study, but also seek to protect the computer from harm. Additionally, a system administrator may want to open up servers for public use, but limit the operations each user can perform to prevent or limit damage to the overall system.
 \newline\newline
-In each of these situations, the typical solution is to create a sort of restricted environment for "unsafe" programs to run, commonly known as a "sandbox." Creating such a restricted environment comes in many forms, from using tools and syscalls built into an operating system, to emulating the machine instructions of an application binary, to even using full-featured virtual machines. Selecting a sandboxing tool from this wide buffet of options can be difficult, and may vary depending on the use case or software to be sandboxed. In our research, we seek to survey the current state of sandboxing technologies by discussing the different techniques employed, then present a comparison of various sandboxing programs in both objective, hard metrics as well as subjective, soft metrics.
+In each of these situations, the typical solution is to create a sort of restricted environment for unsafe programs to run. Creating such a restricted environment comes in many forms, from using tools and syscalls built into an operating system, to emulating the machine instructions of an application binary, to even using full-featured virtual machines. Selecting a tool from this wide buffet of options can be difficult, and may vary depending on the use case or software to be restricted. In our research, we seek to survey the current state of restricted computing technologies by discussing the different techniques employed, then present a comparison of various programs that provide this restricted computing environment in both objective, hard metrics as well as subjective, soft metrics.
 
 \section*{2. Literature Review}
+
+In preparation for our research, we sought out existing literature on existing application isolation techniques. We discovered a diverse set of techniques used to create isolated and restricted environments for running untrusted code.
+\newline\newline
+A prior survey of virtualization technologies for untrusted code execution from 2012 \cite{wen2012survey} noted that untrusted code is usually executed in one of four categories:
+\begin{enumerate}
+    \item Application-level sandboxing through kernel interposition and resource access control policies
+    \item Simulating an operating system environment through virtualizing an operating system's runtime API
+    \item Containerizing an execution environment through kernel-supported isolation of all resources required by a process
+    \item Virtualizing hardware and isolating full operating systems through Type I and Type II virtual machine monitors
+\end{enumerate}
 
 \section*{3. Research Methodology}
 
