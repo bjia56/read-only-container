@@ -10,9 +10,17 @@
 
 \maketitle
 
+\section*{Abstract}
+
+In modern computer systems, users and researchers often need to run untrusted and potentially malicious code, yet would like to protect their systems from harm. This is often achieved by creating a restricted "sandbox" environment in which the untrusted code then executes safely. We seek to survey the current state of sandboxing technologies and present a comparison of various sandboxing programs.
+
 \section*{1. Introduction}
 
-sandboxes!
+Despite the best efforts of systems and hardware designers, a major weakness of modern day operating systems is the high level of trust given to user-level application code to allow programs to do what they are designed to do. A word processor is permitted to read and write files to the local filesystem, whereas a web browser is permitted to open sockets and make network connections. Without these capabilities, programs would be rendered useless, much to a computer user's dissatisfaction.
+\newline\newline
+While many software applications (such as word processors and web browsers) are now distributed through secure channels and feature cryptographic signatures from trusted entities, there are still instances where users want to run untrusted code, but still keep their local system safe from any malicious side effects. For example, web scripting languages such as JavaScript are present in a large majority of websites, which run the untrusted scripts immediately as a webpage loads. As users cannot be expected to disable JavaScript completely (thus rendering most websites unusable), browser designers are forced to design policies and mechanisms to isolate this untrusted code from the rest of the computer. In another case, a security researcher may want to run malware on a local computer for testing and study, but also seek to protect the computer from harm. Additionally, a system administrator may want to open up servers for public use, but limit the operations each user can perform to prevent or limit damage to the overall system.
+\newline\newline
+In each of these situations, the typical solution is to create a sort of restricted environment for "unsafe" programs to run, commonly known as a "sandbox." Creating such a restricted environment comes in many forms, from using tools and syscalls built into an operating system, to emulating the machine instructions of an application binary, to even using full-featured virtual machines. Selecting a sandboxing tool from this wide buffet of options can be difficult, and may vary depending on the use case or software to be sandboxed. In our research, we seek to survey the current state of sandboxing technologies by discussing the different techniques employed, then present a comparison of various sandboxing programs in both objective, hard metrics as well as subjective, soft metrics.
 
 \section*{2. Literature Review}
 
