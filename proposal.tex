@@ -1,5 +1,6 @@
 \documentclass{proc}
 \usepackage{url}
+\linespread{1.2}
 
 \begin{document}
 
@@ -34,14 +35,36 @@ A prior survey of virtualization technologies for untrusted code execution from 
 \end{enumerate}
 
 \section*{3. Research Methodology}
-
-\begin{enumerate}
-\item item 1
-\end{enumerate}
+We plan to evaluate a sample of widely-used sandboxes ranging from lightweight \texttt{chroot}-based jails to full-blown virtual machines. We will evaluate the sandboxes on hard (quantitative) metrics as well as soft metrics to provide more context for the quantitative results. The hard metrics are: startup time, execution speed, syscall speed, memory overhead. The soft metrics are: hardware requirements, software/OS requirements, ease of setup and launch, granularity of configuration, configuration management.
+Based on our literature review, we found these sandboxes to be a representative sample of current sandboxing methods:\vspace{0.5em}
+{\small
+\begin{itemize}
+\item minijail and firejail
+\item QEMU
+\item Native Client
+\item MBox
+\item Linux Containers
+\item FreeBSD jail
+\item Docker
+\item VirtualBox running Debian guest
+\end{itemize}
+}
 
 \section*{4. Hypothesis}
 
 \section*{5. Projected Research Schedule}
+\textbf{2/12-2/18} \\
+\textbf{2/19-2/25}
+\textbf{2/26-3/4}
+\textbf{3/5-3/11}
+\textbf{3/12-3/18} \\
+\textbf{3/19-3/25}
+\textbf{3/26-4/1}
+\textbf{4/2-4/8}
+\textbf{4/9-4/15}
+\textbf{4/16-4/22}
+\textbf{4/23-4/29}
+\textbf{4/30-5/6}  
 
 
 
