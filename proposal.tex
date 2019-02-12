@@ -107,20 +107,22 @@ Our tests will be performed on x86-64 Linux machines (which will require access 
 \subsubsection*{3.2 Required Software}
 We seek to use the industry-standard SPEC CPU2017 benchmark \cite{limaye2018spec} as a test suite to gather performance metrics. However, we are not sure if it is practical, given its cost (\$1,000). Other possibilities include using open-source benchmarks such as PXZ and sysbench. These were used in a 2014 performance study on containers and virtual machines by IBM Research ~\cite{felter2014docker}. For measuring startup time and syscall time, we will use the \emph{perf} tool.
 \section*{4. Hypothesis}
-We hypothesize that there will be an inverse relationship between configurability and how ``light-weight'' a restricted computing tool is; that is, we expect that the more configurable or flexible the tool is to use (e.g. how granular of access controls can be set up), the longer it will take to start up and the larger memory footprint it will require. In particular, we anticipate Docker, VirtualBox VM, and QEMU to have significant startup overheads due to creation of a writable container layer for containers, and virtual disk creation for virtual machines. We expect execution time and memory overhead of containers and virtual machines to be close to native execution ~\cite{felter2014docker}. On the other hand, for sandboxes relying on syscall filtering methods like seccomp, we expect the main slowdown to be syscall speed due to interposition on a non-trivial fraction of those syscalls ~\cite{kim2013mbox}. While performance of containers and virtual machines on hard metrics have been studied, we hope to present measurements across a wider range of isolation techniques.
+We hypothesize that there will be an inverse relationship between configurability and how ``light-weight'' a restricted computing tool is; that is, we expect that the more configurable or flexible the tool is to use (e.g. how granular of access controls can be set up), the longer it will take to start up and the larger memory footprint it will require. In particular, we anticipate Docker, VirtualBox VM, and QEMU to have significant startup overheads due to creation of a writable container layer for containers, and virtual disk creation for virtual machines.\\
+
+For sandboxes relying on syscall filtering methods like \texttt{seccomp}, we hypothesize the main slowdown to be syscall speed due to interposition on a non-trivial fraction of those syscalls ~\cite{kim2013mbox}. It will be difficult for sandboxes to outperform containers and virtual machines with respect to execution time and memory overhead, as the latter's performance has shown to be close to native execution ~\cite{felter2014docker}. Furthermore, \texttt{seccomp-bpf} sandboxes may also have slower start up time as programs need to be individually profiled with strace for effective syscall policy creation.
 \section*{5. Projected Research Schedule}
-\textbf{2/12-2/18} \\
-\textbf{2/19-2/25}
-\textbf{2/26-3/4}
-\textbf{3/5-3/11}
-\textbf{3/12-3/18} \\
-\textbf{3/19-3/25}
-\textbf{3/26-4/1}
-\textbf{4/2-4/8}
-\textbf{4/9-4/15}
-\textbf{4/16-4/22}
-\textbf{4/23-4/29}
-\textbf{4/30-5/6}
+\textbf{2/12-2/18} further literature review to acquire a detailed understanding of the underlying technologies used by each tool\\
+\textbf{2/19-2/25} acquire and set up the software we intend to test\\
+\textbf{2/26-3/4} acquire and set up benchmarking tools\\
+\textbf{3/5-3/11} perform initial benchmarking on the listed technologies; create slides for project status report\\
+\textbf{3/12-3/18} continue data collection; begin data analysis and comparisons\\
+\textbf{3/19-3/25} finalize data collection and analysis; begin draft of abstract\\
+\textbf{3/26-4/1} continue writing abstract; begin draft of each technology's implementation and the literature behind them\\
+\textbf{4/2-4/8} expand on abstract into the extended abstract\\
+\textbf{4/9-4/15} continue writing extended abstract\\
+\textbf{4/16-4/22} begin work on project presentation slides\\
+\textbf{4/23-4/29} continue presentation slides; continue expanding on extended abstract into final report\\
+\textbf{4/30-5/6} finish final report
 
 
 
