@@ -17,15 +17,15 @@ In modern computer systems, users and researchers often need to run untrusted an
 \section*{1. Introduction}
 
 Despite the best efforts of systems and hardware designers, a major weakness of modern day operating systems is the high level of trust given to user-level application code to allow programs to do what they are designed to do. A word processor is permitted to read and write files to the local filesystem, whereas a web browser is permitted to open sockets and make network connections. Without these capabilities, programs would be rendered useless, much to a computer user's dissatisfaction.
-\newline\newline
+
 While many software applications (such as word processors and web browsers) are now distributed through secure channels and feature cryptographic signatures from trusted entities, there are still instances where users want to run untrusted code, but still keep their local system safe from any malicious side effects. For example, web scripting languages such as JavaScript are present in a large majority of websites, which run the untrusted scripts immediately as a webpage loads. As users cannot be expected to disable JavaScript completely (thus rendering most websites unusable), browser designers are forced to design policies and mechanisms to isolate this untrusted code from the rest of the computer. In another case, a security researcher may want to run malware on a local computer for testing and study, but also seek to protect the computer from harm. Additionally, a system administrator may want to open up servers for public use, but limit the operations each user can perform to prevent or limit damage to the overall system.
-\newline\newline
+
 In each of these situations, the typical solution is to create a sort of restricted environment for unsafe programs to run. Creating such a restricted environment comes in many forms, from using tools and syscalls built into an operating system, to emulating the machine instructions of an application binary, to even using full-featured virtual machines. Selecting a tool from this wide buffet of options can be difficult, and may vary depending on the use case or software to be restricted. In our research, we seek to survey the current state of restricted computing technologies by discussing the different techniques employed, then present a comparison of various programs that provide this restricted computing environment in both objective, hard metrics as well as subjective, soft metrics.
 
 \section*{2. Literature Review}
 
 In preparation for our research, we sought out existing literature on existing application isolation techniques. We discovered a diverse set of techniques used to create isolated and restricted environments for running untrusted code. Our findings are listed below in this section.
-\newline\newline
+
 A prior survey of isolation systems and techniques from 2009 \cite{viswanathan2009isolation} categorizes isolation techniques into the following categories:
 \begin{enumerate}
     \item Language-based isolation (e.g. type safety and compiler verification)
@@ -36,7 +36,7 @@ A prior survey of isolation systems and techniques from 2009 \cite{viswanathan20
     \item Physical isolation (e.g. airgapped machines)
 \end{enumerate}
 The taxonomy of isolation techniques and a list of surveyed systems presented in the aforementioned paper provide a useful categorization of restricted computing environment techniques and useful comparisons of the taxonomic categories listed above. For the purposes of our research, we are mainly interested in sandbox-based and virtual machine-based isolation.
-\newline\newline
+
 Another survey of virtualization technologies for untrusted code execution from 2012 \cite{wen2012virtualization} notes that untrusted code is usually executed in one of four categories:
 \begin{enumerate}
     \item Application-level sandboxing through programming language features, kernel interposition, or resource access control policies
@@ -45,8 +45,8 @@ Another survey of virtualization technologies for untrusted code execution from 
     \item Virtualizing hardware and isolating full operating systems through Type I and Type II virtual machine monitors
 \end{enumerate}
 This survey by Wen et al. presents various examples of each type of restricted computing environment and discusses their strengths and weaknesses, however fails to present quantitative metrics to compare the technologies listed. Indeed, the research presented by Viswanathan and Neuman \cite{viswanathan2009isolation} also fails to present any sort of benchmarking for the surveyed technologies.
-\newline\newline
-Although useful in providing categorization and terminology, we find these two surveys to be dated, as newer forms of restricted computing environments have been developed in recent years. Our own literature review presents the following list of technologies (some of which have been discussed in the prior two surveys), to be expanded upon in following subsections:
+
+Although these two surveys are useful in providing categorization and terminology, we find them to be dated, as newer forms of restricted computing environments have been developed in recent years. Our own literature review presents the following list of technologies (some of which have been discussed in the prior two surveys), to be expanded upon in following subsections:
 \begin{enumerate}
     \item FreeBSD Jails \cite{kamp2000jails}
     \item File Monitoring and Access Control (FMAC) \cite{prevelakis2001fmac}
@@ -75,13 +75,19 @@ Google's Native Client \cite{yee2009native} is a sandbox for untrusted x86 code,
 
 \subsection*{2.5 Apiary}
 
+Potter and Nieh \cite{potter2010apiary} present an innovative approach to application compartimentalization through the use of containers. Apiary's application isolation and fault containment advances build upon existing operating system isolation features (e.g. Solaris zones and FreeBSD jails), but enables a holistic display system across all containers and inter-application communication and integration through restrictive, shared filesystems. Apiary also introduces the Virtual Layered File System, an efficient way of combining multiple layers of file systems that a container can view, but also require strict access control policies. Apiary's benchmarks show that the container technique presented adds minimal overhead to the normal operation of containerized applications.
+
 \subsection*{2.6 MBOX}
+
+Kim and Zeldovich \cite{kim2013mbox} describe and implement a lightweight sandboxing mechanism, MBOX, to restrict an application's syscalls and filesystem accesses. MBOX achieves this through using \texttt{seccomp-bpf} as a kernel interposition resource, and utilizing a layered filesystem technique to restrict access to the local filesystem. Unlike Apiary, MBOX uses its layered filesystem to allow sandboxed applications to access local files and propose modifications, but stores the changes in a sandboxed area of persistent storage. Once the sandboxed application terminates, a user is given the option of committing any changes back into the local filesystem.
 
 \subsection*{2.7 System sandbox (for Microsoft Windows)}
 
+Vokorokos et al. \cite{vokorokos2015sandboxMSWIN} take a different approach to sandboxes by focusing solely on the Microsoft Windows platform. They assert that the most important operating system components of Windows that require protection are \textit{files}, \textit{system registry}, \textit{network interfaces}, and \textit{system resources}. The proposed sandboxing system protects these components through using various copy-on-write filters for the filesystem and system registry, blocking network access through the Windows firewall, and limiting access to system resources through Windows Job objects. Although the proposed solution solely targets Windows, the methods employed are largely analogous to methods often seen in Unix-based systems.
+
 \section*{3. Research Methodology}
 We plan to evaluate a sample of widely-used process isolation and restricted computing environments ranging from lightweight \texttt{chroot}- and \texttt{seccomp}-based jails to full-blown virtual machines. The hard (quantitative and objective) metrics in our evaluation are: \textit{startup time}, \textit{execution speed}, \textit{syscall speed}, and \textit{memory overhead}. The soft (subjective) metrics are: \textit{hardware requirements}, \textit{software/operating systems requirements}, \textit{ease of setup and launch}, \textit{granularity of configuration}, and \textit{configuration management}. We expect that the soft metrics will provide some context for the quantitative differences between the isolation techniques and reveal tradeoffs between functionality and performance.
-\newline\newline
+
 Based on our literature review, we found these technologies and tools to be a representative sample of current methods of creating restricted computing environments:\vspace{0.5em}
 {\small
 \begin{itemize}
@@ -95,7 +101,6 @@ Based on our literature review, we found these technologies and tools to be a re
 \item VirtualBox running Debian guest
 \end{itemize}
 }
-\noindent
 To collect hard metrics, we will run benchmarks that stress CPU and memory resources. We will then analyze the results and examine the implementations of each tool to explain measurement trends. This may be repeated in an iterative process, for example running the same benchmark on increasingly stricter security configurations for each restricted environment. As part of the measurement process, we will collect experience using these technologies to qualify our soft metrics.
 \subsubsection*{3.1 Required Hardware}
 Our tests will be performed on x86-64 Linux machines (which will require access to the CLIC lab, and maybe CRF accounts). We will use the same operating system distribution when possible. In the case of FreeBSD jail running on FreeBSD or minijail running on Chrome OS, for example, we will account for operating system differences in our analysis.
