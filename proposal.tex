@@ -90,37 +90,26 @@ Kim and Zeldovich \cite{kim2013mbox} describe and implement a lightweight sandbo
 Vokorokos et al. \cite{vokorokos2015sandboxMSWIN} take a different approach to sandboxes by focusing solely on the Microsoft Windows platform. They assert that the most important operating system components of Windows that require protection are \textit{files}, \textit{system registry}, \textit{network interfaces}, and \textit{system resources}. The proposed sandboxing system protects these components through using various copy-on-write filters for the filesystem and system registry, blocking network access through the Windows firewall, and limiting access to system resources through Windows Job objects. Although the proposed solution solely targets Windows, the methods employed are largely analogous to methods often seen in Unix-based systems.
 
 \section*{3. Research Methodology}
-We plan to evaluate a sample of widely-used process isolation and restricted computing environments ranging from lightweight \texttt{chroot}- and \texttt{seccomp}-based jails to full-blown virtual machines. The hard (quantitative and objective) metrics in our evaluation are: \textit{startup time}, \textit{execution speed}, \textit{syscall speed}, and \textit{memory overhead}. The soft (subjective) metrics are: \textit{hardware requirements}, \textit{software/operating systems requirements}, \textit{ease of setup and launch}, \textit{granularity of configuration}, and \textit{configuration management}. We expect that the soft metrics will provide some context for the quantitative differences between the isolation techniques and reveal tradeoffs between functionality and performance.
+We plan to implement an isolation mechanism for read-only host monitoring. First, we will define the set of resources which will be readable by applications running inside the container. For example, a reasonable monitoring tool would access information about CPU load, memory usage, disk usage, process information, which we want to make available. On the other hand, we may want to restrict access to other resources such as named pipes or network sockets.
 
-Based on our literature review, we found these technologies and tools to be a representative sample of current methods of creating restricted computing environments:\vspace{0.5em}
-{\small
-\begin{itemize}
-\item minijail and firejail
-\item QEMU
-\item Native Client
-\item MBox
-\item Linux Containers
-\item FreeBSD jail
-\item Docker
-\item VirtualBox running Debian guest
-\end{itemize}
-}
-To collect hard metrics, we will run benchmarks that stress CPU and memory resources. We will then analyze the results and examine the implementations of each tool to explain measurement trends. This may be repeated in an iterative process, for example running the same benchmark on increasingly stricter security configurations for each restricted environment. As part of the measurement process, we will note our experiences using these technologies to qualify our soft metrics.
+Our container will relax the isolation provided by containers like Docker, but will be otherwise similar. It makes sense then to extend runC to implement our read-only isolation, rather than building our own container. Currently, runC uses \texttt{seccomp-bpf} filters to interpose on syscalls, but their rule-based filtering does not allow for more advanced logic. Our work will be to add additional syscall handling.
+
+Finally we will evaluate our container on a range of host-monitoring and application performance monitoring tools. Our tentative list includes: linux commands like \texttt{top} or \texttt{free}, more complex utilities like \texttt{sysstat}, remote monitoring tools like \emph{GKrellM}, and graphical tools like \emph{Cacti}, \emph{Nagios}. We will also ensure standard unix tools work (\texttt{awk, grep, vim, md5sum}). The main soft evaluation metric is ease of use compared to monitoring directly on the most and monitoring with a Docker container. The hard metrics include speed of instantiation, syscall speed, scalability with respect to memory and cpu usage (i.e., running multiple containers on the same host). 
+
+In addition to well-behaving tools, we will run malicious programs to show that our container protects host resources from malicious behavior.
+
 \subsubsection*{3.1 Required Hardware}
-Our tests will be performed on x86-64 Linux machines (which will require access to the CLIC lab, and maybe CRF accounts). We will use the same operating system distribution when possible. In the case of FreeBSD jail running on FreeBSD or minijail running on Chrome OS, for example, we will account for operating system differences in our analysis.
+We will develop in VMs, but test and measure performance on x86-64 Linux machines (which will require access to the CLIC lab, and maybe CRF accounts).
+
 \subsubsection*{3.2 Required Software}
-We seek to use the industry-standard SPEC CPU2017 benchmark \cite{limaye2018spec} as a test suite to gather performance metrics. However, we are not sure if it is practical, given its cost (\$1,000). Other possibilities include using open-source benchmarks such as PXZ and sysbench. These were used in a 2014 performance study on containers and virtual machines by IBM Research ~\cite{felter2014docker}. For measuring startup time and syscall time, we will use the \emph{perf} tool.
+Our required software is mostly open-source or free: standard system tools that ship with Linux, \emph{Cacti, Nagios, GKrellM, sysstat, Docker}.
+
 \section*{4. Hypothesis}
-We hypothesize that there will be an inverse relationship between configurability and how ``lightweight'' a restricted computing tool is; that is, we expect that the more configurable or flexible the tool is to use (e.g. how granular of access controls can be set up), the longer it will take to start up and the larger memory footprint it will require. In particular, we anticipate Docker, VirtualBox VM, and QEMU to have significant startup overheads due to creation of a writable container layer for containers, and virtual disk creation for virtual machines.\\
 
-For sandboxes relying on syscall filtering methods like \texttt{seccomp}, we hypothesize the main slowdown to be syscall speed due to interposition on a non-trivial fraction of those syscalls ~\cite{kim2013mbox}. It will be difficult for sandboxes to outperform containers and virtual machines with respect to execution time and memory overhead, as the latter's performance has shown to be close to native execution ~\cite{felter2014docker}. Furthermore, \texttt{seccomp-bpf} sandboxes may also have slower and manual set up time as programs need to be individually profiled with strace for effective syscall policy creation.
 
-Finally, we believe that the quantitative and qualitative results found through this research can assist in determining the best kind of restricted computing environment technology for different classes of use cases. We aim to describe some of these classes and our recommendations for the technology to choose.
+
 \section*{5. Projected Research Schedule}
-\textbf{2/12-2/18} further literature review to acquire a detailed understanding of the underlying technologies used by each tool\\
-\textbf{2/19-2/25} acquire and set up the software we intend to test\\
-\textbf{2/26-3/4} acquire and set up benchmarking tools\\
-\textbf{3/5-3/11} perform initial benchmarking on the listed technologies; create slides for project status report\\
+\textbf{3/5-3/11} perform initial tests on runC, explore runC codebase; create slides for project status report\\
 \textbf{3/12-3/18} continue data collection; begin data analysis and comparisons\\
 \textbf{3/19-3/25} finalize data collection and analysis; begin draft of abstract\\
 \textbf{3/26-4/1} continue writing abstract; begin draft of each technology's implementation and the literature behind them\\
