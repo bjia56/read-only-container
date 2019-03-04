@@ -33,7 +33,9 @@ Linux supports the creation of isolated environments through chroot jails and mo
 
 Bind mounts can be used with Docker containers. One restriction is that standard Docker command line interface cannot be used to manage bind mounts. Thus, one would use the Docker CLI to manage the container, and separately use Linux commands to manage the bind mount. A read-only container can also be achieved through read-only volumes. Volumes are created as new directories or pre-populated with data in Docker's storage directory. They are generally preferred for easy sharing, backup, migration, and management. However, not all of this functionality is relevant to our needs, and we hope to achieve the same read-only isolation for our specific workloads by combining bind mounts and syscall filtering.
 
-Linux also supports sycall filtering via \texttt{seccomp-bpf} filters. Seccomp is used in conjunction with namespaces, cgroups to implement containerization in Docker, LXC, etc. Currently, the container runtime runC uses seccomp to interpose on syscalls, but their rule-based filtering does not allow for more advanced logic.
+Linux also supports sycall filtering via \texttt{seccomp-bpf} filters. Seccomp is used in conjunction with namespaces, cgroups to implement containerization in Docker, LXC, etc. Currently, the container runtime runC (similar to libcontainer) uses \texttt{seccomp} to interpose on syscalls\cite{opencontainerinitiative}, but their rule-based filtering does not allow for more advanced logic.
+
+Host-monitoring applications isolated in read-only filesystems may also need a place to temporarily store the output of its monitoring. \texttt{tmpfs} can be used to store temporary data in RAM rather than on disk. Furthermore, the size can be limited to prevent a host-monitoring program from consuming too much memory. When combined with Docker, a \texttt{tmpfs} mount is persisted in host memory while the container runs, and removed when a container stops. 
 
 %\subsection*{2.5 Apiary}
 
