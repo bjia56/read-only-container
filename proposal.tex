@@ -26,40 +26,24 @@ Modern containers combine these operating system virtualization approaches to cr
 
 In our research, we intend to explore the application of modern Linux container technologies to the area of system monitoring. In particular, we intend to address the problems of host stability and fault tolerance that arise from executing buggy or compromised system tools and from user negligence and error when performing system administration tasks. In the following sections, we list existing container and sandboxing technologies, our research approach, and our research timeline.
 
-\section*{2. Literature Review}
+\section*{2. Related Work}
+Current technologies allow for read-only containerization through built-in linux commands like a bind mount. However, configuring and setting up a container with read-only properties requires additional work. Furthermore, such configurations only grant access or protect access on the granularity of filesystems, while we would like more fine-grained protection of resources.
 
-In preparation for our research, we sought out existing literature on existing application isolation techniques. We discovered a diverse set of techniques used to create isolated and restricted environments for running untrusted code. Our findings are listed below in this section.
+Linux supports the creation of isolated environments through chroot jails and mount namespaces. While chroot changes the root directory for a process, mount namespaces allow for more flexibility and security. Bind mounts (\texttt{mount} command with \texttt{--bind} option) make a file system visible at a second mount point\cite{bindmount}. This kind of `symbolic link' allows for a specific view of the filesystem namespace. By bind mounting the root directory or \texttt{/proc}, host information becomes readable by a process otherwise closed off from the filesystem.
 
-\begin{enumerate}
-    \item Application-level sandboxing through programming language features, kernel interposition, or resource access control policies
-    \item Simulating an operating system environment through virtualizing an operating system's runtime API
-    \item Containerizing an execution environment through kernel-supported isolation of all resources required by a process
-    \item Virtualizing hardware and isolating full operating systems through Type I and Type II virtual machine monitors
-\end{enumerate}
-\begin{enumerate}
-    \item FreeBSD Jails \cite{kamp2000jails}
-    \item File Monitoring and Access Control (FMAC) \cite{prevelakis2001fmac}
-    \item Vx32 \cite{ford2008vx32}
-    \item Native Client \cite{yee2009native}
-    \item Apiary \cite{potter2010apiary}
-    \item MBOX \cite{kim2013mbox}
-    \item System sandbox (for Microsoft Windows) \cite{vokorokos2015sandboxMSWIN}
-\end{enumerate}
+Bind mounts can be used in conjunction with containers such as Docker to provide stronger isolation guarantees and additional features\cite{dockerdoc}. One restriction is that standard Docker command line interface cannot be used to manage bind mounts. Thus, one would use the Docker CLI to manage the container, and separately use Linux commands to manage the bind mount. A read-only container can also be achieved through read-only volumes. Volumes are created as new directories or pre-populated with data in Docker's storage directory. They are generally preferred for easy sharing, backup, migration, and management. However, not all of this functionality is relevant to our needs, and we hope to achieve the same read-only isolation for our specific workloads by combining bind mounts and syscall filtering.
 
+Linux also supports sycall filtering via \texttt{seccomp-bpf} filters. Seccomp is used in conjunction with namespaces, cgroups to implement containerization in Docker, LXC, etc. Currently, the container runtime runC uses seccomp to interpose on syscalls, but their rule-based filtering does not allow for more advanced logic.
 
-\subsection*{2.2 File Monitoring and Access Control (FMAC)}
+%\subsection*{2.5 Apiary}
 
-Prevelakis and Spinellis \cite{prevelakis2001fmac} present a filesystem sandboxing solution by isolating a process' access to the filesystem through a File Monitoring and Access Control (FMAC) tool, which presents a mirror of the local filesystem. The sandbox mounts the tool as a filesystem and uses \texttt{chroot} to restrict a process to only view the isolated file system. Access control policies can be set up to allow the application to perform certain read or write operations on select files in the mirrored filesystem, effectively protecting the local filesystem from unauthorized access and modification.
-
-\subsection*{2.5 Apiary}
-
-Potter and Nieh \cite{potter2010apiary} present an innovative approach to application compartimentalization through the use of containers. Apiary's application isolation and fault containment advances build upon existing operating system isolation features (e.g. Solaris zones and FreeBSD jails), but enables a holistic display system across all containers and inter-application communication and integration through restrictive, shared filesystems. Apiary also introduces the Virtual Layered File System, an efficient way of combining multiple layers of file systems that a container can view, but also require strict access control policies. Apiary's benchmarks show that the container technique presented adds minimal overhead to the normal operation of containerized applications.
+%Potter and Nieh \cite{potter2010apiary} present an innovative approach to application compartimentalization through the use of containers. Apiary's application isolation and fault containment advances build upon existing operating system isolation features (e.g. Solaris zones and FreeBSD jails), but enables a holistic display system across all containers and inter-application communication and integration through restrictive, shared filesystems. Apiary also introduces the Virtual Layered File System, an efficient way of combining multiple layers of file systems that a container can view, but also require strict access control policies. Apiary's benchmarks show that the container technique presented adds minimal overhead to the normal operation of containerized applications.
 
 
 \section*{3. Research Methodology}
 We plan to implement an isolation mechanism for read-only host monitoring. First, we will define the set of resources which will be readable by applications running inside the container. For example, a reasonable monitoring tool would access information about CPU load, memory usage, disk usage, process information, which we want to make available. On the other hand, we may want to restrict access to other resources such as named pipes or network sockets.
 
-Our container will relax the isolation provided by containers like Docker, but will be otherwise similar. It makes sense then to extend runC to implement our read-only isolation, rather than building our own container. Currently, runC uses \texttt{seccomp-bpf} filters to interpose on syscalls, but their rule-based filtering does not allow for more advanced logic. Our work will be to add support for syscall handling, and support for read-only access to the host filesystem. 
+Our container will relax the isolation provided by containers like Docker, but will be otherwise similar. It makes sense then to extend runC to implement our read-only isolation, rather than building our own container. Our work will be to extend the rule-based filtering in runC with additional logic, to grant read-only access to resources needed for host-monitoring. 
 
 Finally we will evaluate our container on a range of host-monitoring and application performance monitoring tools. Our tentative list includes: linux commands like \texttt{top} or \texttt{free}, more complex utilities like \texttt{sysstat}\cite{sysstat}, remote monitoring tools like \emph{GKrellM}\cite{gkrellm}, and graphical tools like \emph{Cacti}\cite{cacti}, \emph{Nagios}\cite{nagios}. We will also ensure standard unix tools work (\texttt{awk, grep, vim, md5sum}). The main soft evaluation metric is ease of use compared to monitoring directly on the most and monitoring with a Docker container. The hard metrics include speed of instantiation, syscall speed, scalability with respect to memory and cpu usage (i.e., running multiple containers on the same host). 
 
@@ -76,10 +60,10 @@ We hypothesize that monitoring tools will be able to run successfully and access
 
 \section*{5. Projected Research Schedule}
 \textbf{3/5-3/11} perform initial tests on runC, explore runC codebase, design our container; create slides for project status report\\
-\textbf{3/12-3/18} implementation\\
-\textbf{3/19-3/25} implementation; begin draft of abstract\\
-\textbf{3/26-4/1} implementation; continue writing abstract;\\
-\textbf{4/2-4/8} implementation; expand on abstract into the extended abstract\\
+\textbf{3/12-3/18} implementation: allow simple linux commands to access \texttt{/proc}\\
+\textbf{3/19-3/25} implementation: support more complicated monitoring tools. begin draft of abstract\\
+\textbf{3/26-4/1} implementation, continue writing abstract\\
+\textbf{4/2-4/8} implementation, expand on abstract into the extended abstract\\
 \textbf{4/9-4/15} test performance on monitoring tools, continue writing extended abstract\\
 \textbf{4/16-4/22} more testing; adjust implementation based on performance testing, begin work on project presentation slides\\
 \textbf{4/23-4/29} continue presentation slides; continue expanding on extended abstract into final report\\
