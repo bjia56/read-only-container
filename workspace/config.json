@@ -82,6 +82,16 @@
             "type": "tmpfs"
         },
         {
+            "destination": "/tmp",
+            "options": [
+                "nosuid",
+                "nodev",
+                "mode=1777",
+                "size=65536k"
+            ],
+            "type": "tmpfs"
+        },
+        {
             "destination": "/dev/mqueue",
             "options": [
                 "nosuid",
