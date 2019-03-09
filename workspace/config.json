@@ -12,6 +12,9 @@
         ],
         "namespaces": [
             {
+                "type": "pid"
+            },
+            {
                 "type": "network"
             },
             {
