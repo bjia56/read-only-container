@@ -185,7 +185,7 @@
         }
     },
     "root": {
-        "path": "rootfs",
+        "path": "/tmp/roc_rootfs",
         "readonly": true
     }
 }

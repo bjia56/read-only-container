@@ -6,7 +6,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-ROOTFS=$(pwd -P)/rootfs
+ROOTFS=/tmp/roc_rootfs
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
 # Create rootfs directory, if it does not exist
