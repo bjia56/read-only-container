@@ -1,5 +1,10 @@
 #!/bin/bash
-# Note: this script should be run with sudo
+
+# Are we running as root?
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root"
+   exit 1
+fi
 
 ROOTFS=$(pwd -P)/rootfs
 
