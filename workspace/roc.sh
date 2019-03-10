@@ -8,6 +8,7 @@ fi
 
 ROOTFS=/tmp/roc_rootfs
 UUID=$(cat /proc/sys/kernel/random/uuid)
+BUNDLE=$(dirname "$0")
 
 # Create rootfs directory, if it does not exist
 mkdir -p $ROOTFS
@@ -17,7 +18,7 @@ read -d '' start_container <<SHELL
     bindfs -r / $ROOTFS
 
     # Run container
-    runc run $UUID
+    runc run -b $BUNDLE $UUID
 
     # Teardown mount
     umount $ROOTFS
