@@ -7,6 +7,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 ROOTFS=$(pwd -P)/rootfs
+UUID=$(cat /proc/sys/kernel/random/uuid)
 
 # Create rootfs directory, if it does not exist
 mkdir -p $ROOTFS
@@ -15,7 +16,7 @@ mkdir -p $ROOTFS
 bindfs -r / $ROOTFS
 
 # Run container
-runc run roc
+runc run $UUID
 
 # Teardown mount
 umount $ROOTFS
