@@ -12,11 +12,16 @@ UUID=$(cat /proc/sys/kernel/random/uuid)
 # Create rootfs directory, if it does not exist
 mkdir -p $ROOTFS
 
-# Mount root
-bindfs -r / $ROOTFS
+read -d '' start_container <<SHELL
+    # Mount root
+    bindfs -r / $ROOTFS
 
-# Run container
-runc run $UUID
+    # Run container
+    runc run $UUID
 
-# Teardown mount
-umount $ROOTFS
+    # Teardown mount
+    umount $ROOTFS
+SHELL
+
+unshare -fm /bin/bash -c "$start_container"
+wait
