@@ -12,11 +12,10 @@ ROOTFS=$(pwd -P)/rootfs
 mkdir -p $ROOTFS
 
 # Mount root
-mount -R -r / $ROOTFS
+bindfs -r / $ROOTFS
 
 # Run container
 runc run roc
 
 # Teardown mount
-mount --make-rprivate $ROOTFS
-umount -R $ROOTFS
+umount $ROOTFS

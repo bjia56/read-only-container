@@ -46,6 +46,14 @@
     },
     "mounts": [
         {
+            "destination": "/proc",
+            "source": "/proc",
+            "options": [
+                "bind",
+                "ro"
+            ]
+        },
+        {
             "destination": "/dev",
             "options": [
                 "nosuid",
