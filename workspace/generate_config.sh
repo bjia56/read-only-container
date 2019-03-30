@@ -1,5 +1,15 @@
+#!/bin/bash
+
+REAL_UID=$1
+REAL_GID=$2
+USR_PATH=$3
+ROOTFS=$4
+HOSTNAME=$(/bin/hostname)
+USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
+
+/bin/cat << EOF
 {
-    "hostname": "runc",
+    "hostname": "$HOSTNAME",
     "linux": {
         "maskedPaths": [
             "/proc/kcore",
@@ -136,7 +146,7 @@
     "ociVersion": "1.0.1-dev",
     "process": {
         "args": [
-            "bash"
+            "/bin/bash"
         ],
         "capabilities": {
             "ambient": [
@@ -160,10 +170,11 @@
                 "CAP_NET_BIND_SERVICE"
             ]
         },
-        "cwd": "/",
+        "cwd": "$USR_HOME",
         "env": [
-            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-            "TERM=xterm"
+            "PATH=$USR_PATH",
+            "TERM=xterm",
+            "SHELL=/bin/bash"
         ],
         "noNewPrivileges": true,
         "rlimits": [
@@ -175,12 +186,13 @@
         ],
         "terminal": true,
         "user": {
-            "gid": 0,
-            "uid": 0
+            "gid": $REAL_GID,
+            "uid": $REAL_UID
         }
     },
     "root": {
-        "path": "/tmp/roc_rootfs",
+        "path": "$ROOTFS",
         "readonly": true
     }
 }
+EOF
