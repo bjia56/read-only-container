@@ -4,43 +4,67 @@ REAL_UID=$1
 REAL_GID=$2
 USR_PATH=$3
 WORK_DIR=$4
-ROOTFS=$5
-UUID=$6
+ROOTFS=$WORK_DIR/rootfs
+X11_DIR=$WORK_DIR/.X11-unix
+OVERLAY_HOME=$WORK_DIR/overlay_home
+OVERLAY_WORKDIR=$WORK_DIR/overlay_work
+UUID=$5
+USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
 CWD=$(/usr/bin/dirname "$0")
 HOSTNAME=$(hostname)
+
+# Create workspace with tmpfs
+/bin/mount -t tmpfs -o size=4m,nr_inodes=1k,mode=777 tmpfs $WORK_DIR
+
+# Create rootfs directory
+/bin/mkdir -p $ROOTFS
+
+# Create overlayfs workspace
+/bin/mkdir -p $OVERLAY_HOME
+/bin/mkdir -p $OVERLAY_WORKDIR
 
 # Create X11 proxy
 if [ -n "$DISPLAY" ]; then
     TMP=${DISPLAY#*:}
     DISPLAY_NUM=${TMP%.*}
 
-    mkdir -p $WORK_DIR/.X11-unix
-    touch $WORK_DIR/.X11-unix/.Xauthority
+    /bin/mkdir -p $X11_DIR
+    /usr/bin/touch $OVERLAY_HOME/.Xauthority
 
-    XAUTH_INFO=$(xauth list $DISPLAY | cut -d ' ' -f 3,5)
-    echo $XAUTH_INFO
-    (HOME=$WORK_DIR/.X11-unix; xauth add :$DISPLAY_NUM $XAUTH_INFO)
-    (HOME=$WORK_DIR/.X11-unix; xauth list)
+    XAUTH_INFO=$(/usr/bin/xauth list $DISPLAY | cut -d ' ' -f 3,5)
+    (HOME=$OVERLAY_HOME; /usr/bin/xauth add :$DISPLAY_NUM $XAUTH_INFO)
 
-    chown -R $REAL_UID:$REAL_GID $WORK_DIR/.X11-unix
+    /bin/chown -R $REAL_UID:$REAL_GID $X11_DIR
 
-    sudo -u \#$REAL_UID socat unix-listen:$WORK_DIR/.X11-unix/X$DISPLAY_NUM,fork,unlink-early tcp-connect:localhost:$((6000 + $DISPLAY_NUM)) &
-    X11_PROXY_PID=$!
+    /usr/bin/sudo -u \#$REAL_UID /usr/bin/socat unix-listen:$X11_DIR/X$DISPLAY_NUM,fork,unlink-early tcp-connect:localhost:$((6000 + $DISPLAY_NUM)) &
 fi
+
+/bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_HOME
+/bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_WORKDIR
 
 # Make config
 $CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $DISPLAY_NUM > $WORK_DIR/config.json
 
-# Mount root
+# Mount root with bindfs
 /usr/bin/bindfs -r / $ROOTFS
+
+# Mask $HOME with overlayfs workspace
+/bin/mount -t overlay overlay -o lowerdir=$ROOTFS$USR_HOME,upperdir=$OVERLAY_HOME,workdir=$OVERLAY_WORKDIR $ROOTFS$USR_HOME
 
 # Run container
 /usr/local/sbin/runc run -b $WORK_DIR $UUID
 
-# Teardown mount
-umount $ROOTFS
+# Teardown overlay
+/bin/umount $ROOTFS$USR_HOME
+
+# Teardown bindfs
+/bin/umount $ROOTFS
 
 # Teardown X11 proxy
-if [ -n "$X11_PROXY_PID" ]; then
-    kill "$X11_PROXY_PID"
+if [ -n "$DISPLAY" ]; then
+    X11_PROXY_PIDS=$(ps -ef | grep socat | grep $UUID | awk '{print $2}' | tr -s '\n' ' ')
+    kill $X11_PROXY_PIDS
 fi
+
+# Clean up tmpfs
+/bin/umount $WORK_DIR

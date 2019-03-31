@@ -7,14 +7,13 @@ REAL_GID=$(/usr/bin/id -g $USER)
 UUID=$(/bin/cat /proc/sys/kernel/random/uuid)
 ROC_DIR=/tmp/roc
 WORK_DIR=$ROC_DIR/$UUID
-ROOTFS=$WORK_DIR/rootfs
 CWD=$(/usr/bin/dirname "$0")
 
-# Create rootfs directory, if it does not exist
-/usr/bin/sudo /bin/mkdir -p $ROOTFS
+# Create workspace
+/usr/bin/sudo /bin/mkdir -p $WORK_DIR
 
 # Run the container launcher under its own fs namespace
-/usr/bin/sudo /usr/bin/unshare -fm $CWD/launch_container.sh $REAL_UID $REAL_GID "$PATH" $WORK_DIR $ROOTFS $UUID
+/usr/bin/sudo /usr/bin/unshare -fm $CWD/launch_container.sh $REAL_UID $REAL_GID "$PATH" $WORK_DIR $UUID
 wait
 
 # Cleanup

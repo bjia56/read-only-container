@@ -11,7 +11,6 @@ USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
 
 if [ -n "$DISPLAY_NUM" ]; then
     DISPLAY_ENV="\"DISPLAY=:$DISPLAY_NUM.0\","
-    XAUTHORITY_ENV="\"XAUTHORITY=/tmp/.X11-unix/.Xauthority\","
     DISPLAY_MOUNT="{\"destination\":\"/tmp/.X11-unix\", \"source\":\"$WORK_DIR/.X11-unix\", \"options\":[\"bind\", \"rw\"]},"
 fi
 
@@ -182,7 +181,6 @@ fi
         "cwd": "$USR_HOME",
         "env": [
             $DISPLAY_ENV
-            $XAUTHORITY_ENV
             "PATH=$USR_PATH",
             "TERM=xterm",
             "SHELL=/bin/bash"
