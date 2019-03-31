@@ -3,9 +3,17 @@
 REAL_UID=$1
 REAL_GID=$2
 USR_PATH=$3
-ROOTFS=$4
+WORK_DIR=$4
+ROOTFS=$5
+DISPLAY_NUM=$6
 HOSTNAME=$(/bin/hostname)
 USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
+
+if [ -n "$DISPLAY_NUM" ]; then
+    DISPLAY_ENV="\"DISPLAY=:$DISPLAY_NUM.0\","
+    XAUTHORITY_ENV="\"XAUTHORITY=/tmp/.X11-unix/.Xauthority\","
+    DISPLAY_MOUNT="{\"destination\":\"/tmp/.X11-unix\", \"source\":\"$WORK_DIR/.X11-unix\", \"options\":[\"bind\", \"rw\"]},"
+fi
 
 /bin/cat << EOF
 {
@@ -109,6 +117,7 @@ USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
             ],
             "type": "tmpfs"
         },
+        $DISPLAY_MOUNT
         {
             "destination": "/dev/mqueue",
             "options": [
@@ -172,6 +181,8 @@ USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
         },
         "cwd": "$USR_HOME",
         "env": [
+            $DISPLAY_ENV
+            $XAUTHORITY_ENV
             "PATH=$USR_PATH",
             "TERM=xterm",
             "SHELL=/bin/bash"
