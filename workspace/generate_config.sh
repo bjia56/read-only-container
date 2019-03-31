@@ -32,7 +32,8 @@ fi
                 "type": "pid"
             },
             {
-                "type": "network"
+                "type": "network",
+				"path": "/var/run/netns/runc"
             },
             {
                 "type": "ipc"
