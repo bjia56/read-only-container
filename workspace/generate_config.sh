@@ -160,22 +160,32 @@ fi
         "capabilities": {
             "ambient": [
                 "CAP_AUDIT_WRITE",
+                "CAP_SETGID",
+                "CAP_SETUID",
                 "CAP_NET_BIND_SERVICE"
             ],
             "bounding": [
                 "CAP_AUDIT_WRITE",
+                "CAP_SETGID",
+                "CAP_SETUID",
                 "CAP_NET_BIND_SERVICE"
             ],
             "effective": [
                 "CAP_AUDIT_WRITE",
+                "CAP_SETGID",
+                "CAP_SETUID",
                 "CAP_NET_BIND_SERVICE"
             ],
             "inheritable": [
                 "CAP_AUDIT_WRITE",
+                "CAP_SETGID",
+                "CAP_SETUID",
                 "CAP_NET_BIND_SERVICE"
             ],
             "permitted": [
                 "CAP_AUDIT_WRITE",
+                "CAP_SETGID",
+                "CAP_SETUID",
                 "CAP_NET_BIND_SERVICE"
             ]
         },

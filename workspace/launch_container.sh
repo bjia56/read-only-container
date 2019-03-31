@@ -10,6 +10,7 @@ OVERLAY_HOME=$WORK_DIR/overlay_home
 OVERLAY_WORKDIR=$WORK_DIR/overlay_work
 UUID=$5
 USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
+CALLING_USR_NAME=$(logname)
 CWD=$(/usr/bin/dirname "$0")
 HOSTNAME=$(hostname)
 
@@ -31,7 +32,8 @@ if [ -n "$DISPLAY" ]; then
     /bin/mkdir -p $X11_DIR
     /usr/bin/touch $OVERLAY_HOME/.Xauthority
 
-    XAUTH_INFO=$(/usr/bin/xauth list $DISPLAY | cut -d ' ' -f 3,5)
+    # Get the xauth info for the calling user
+    XAUTH_INFO=$(HOME=$(/usr/bin/getent passwd "$CALLING_USR_NAME" | /usr/bin/cut -d: -f6); /usr/bin/xauth list $DISPLAY | cut -d ' ' -f 3,5)
     (HOME=$OVERLAY_HOME; /usr/bin/xauth add :$DISPLAY_NUM $XAUTH_INFO)
 
     /bin/chown -R $REAL_UID:$REAL_GID $X11_DIR
@@ -63,8 +65,18 @@ $CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $DISPL
 # Teardown X11 proxy
 if [ -n "$DISPLAY" ]; then
     X11_PROXY_PIDS=$(ps -ef | grep socat | grep $UUID | awk '{print $2}' | tr -s '\n' ' ')
-    kill $X11_PROXY_PIDS
+    if [ -n "$X11_PROXY_PIDS" ]; then
+        kill $X11_PROXY_PIDS
+    fi
 fi
 
 # Clean up tmpfs
-/bin/umount $WORK_DIR
+WORK_DIR_BUSY=true
+while $WORK_DIR_BUSY; do
+    /bin/umount $WORK_DIR
+    if [ $? -ne 0 ]; then
+        sleep 1
+    else
+        WORK_DIR_BUSY=false
+    fi
+done
