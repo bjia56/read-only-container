@@ -216,6 +216,14 @@ fi
             "uid": $REAL_UID
         }
     },
+	"hooks": {
+		"poststop": [
+			{
+				"path": "/bin/ip",
+				"args": ["ip", "link", "del", "eth1"]
+			}
+		]
+	},
     "root": {
         "path": "$ROOTFS",
         "readonly": true
