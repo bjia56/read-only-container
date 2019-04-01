@@ -12,6 +12,9 @@ CWD=$(/usr/bin/dirname "$0")
 # Create workspace
 /usr/bin/sudo /bin/mkdir -p $WORK_DIR
 
+# Set up bridge network between host/guest
+/usr/bin/sudo $CWD/setup_bridge.sh
+
 # Run the container launcher under its own fs namespace
 /usr/bin/sudo /usr/bin/unshare -fm $CWD/launch_container.sh $REAL_UID $REAL_GID "$PATH" $WORK_DIR $UUID
 wait
