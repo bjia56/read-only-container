@@ -8,16 +8,24 @@ UUID=$(/bin/cat /proc/sys/kernel/random/uuid)
 ROC_DIR=/tmp/roc
 WORK_DIR=$ROC_DIR/$UUID
 CWD=$(/usr/bin/dirname "$0")
+BRIDGE="runc0"
+# unique container id; 255 is max number of containers
+# also determines guest ip in bridge network
+CTR_ID=$((RANDOM % 255))
 
 # Create workspace
 /usr/bin/sudo /bin/mkdir -p $WORK_DIR
 
-# Set up bridge network between host/guest
-/usr/bin/sudo $CWD/setup_bridge.sh
+# Set up capabilities
+/usr/bin/sudo $CWD/set_capabilities.sh
+
+# Set up bridge network and iptables
+/usr/bin/sudo $CWD/setup_bridge.sh $BRIDGE $CTR_ID
 
 # Run the container launcher under its own fs namespace
-/usr/bin/sudo /usr/bin/unshare -fm $CWD/launch_container.sh $REAL_UID $REAL_GID "$PATH" $WORK_DIR $UUID
+/usr/bin/sudo /usr/bin/unshare -fm $CWD/launch_container.sh $REAL_UID $REAL_GID "$PATH" $WORK_DIR $UUID $CTR_ID
 wait
 
 # Cleanup
+/usr/bin/sudo $CWD/teardown_bridge.sh $BRIDGE $CTR_ID
 /usr/bin/sudo /bin/rm -r $WORK_DIR

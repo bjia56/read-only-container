@@ -1,15 +1,16 @@
 #!/bin/bash
-
 REAL_UID=$1
 REAL_GID=$2
 USR_PATH=$3
 WORK_DIR=$4
 ROOTFS=$5
 DISPLAY_NUM=$6
+CTR_ID=$7
 HOSTNAME=$(/bin/hostname)
 USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
 
 if [ -n "$DISPLAY_NUM" ]; then
+	CTR_ID=$6
     DISPLAY_ENV="\"DISPLAY=:$DISPLAY_NUM.0\","
     DISPLAY_MOUNT="{\"destination\":\"/tmp/.X11-unix\", \"source\":\"$WORK_DIR/.X11-unix\", \"options\":[\"bind\", \"rw\"]},"
 fi
@@ -33,7 +34,7 @@ fi
             },
             {
                 "type": "network",
-				"path": "/var/run/netns/runc"
+				"path": "/var/run/netns/runc$CTR_ID"
             },
             {
                 "type": "ipc"
@@ -215,13 +216,6 @@ fi
             "gid": $REAL_GID,
             "uid": $REAL_UID
         }
-    },
-	"hooks": {
-		"prestart": [
-			{
-				"path": "/home/w4118/capsetter.sh"
-			}
-		]
     },
     "root": {
         "path": "$ROOTFS",

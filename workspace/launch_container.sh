@@ -9,6 +9,7 @@ X11_DIR=$WORK_DIR/.X11-unix
 OVERLAY_HOME=$WORK_DIR/overlay_home
 OVERLAY_WORKDIR=$WORK_DIR/overlay_work
 UUID=$5
+CTR_ID=$6
 USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
 CALLING_USR_NAME=$(logname)
 CWD=$(/usr/bin/dirname "$0")
@@ -45,7 +46,7 @@ fi
 /bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_WORKDIR
 
 # Make config
-$CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $DISPLAY_NUM > $WORK_DIR/config.json
+$CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $DISPLAY_NUM $CTR_ID > $WORK_DIR/config.json
 
 # Mount root with bindfs
 /usr/bin/bindfs -r / $ROOTFS
