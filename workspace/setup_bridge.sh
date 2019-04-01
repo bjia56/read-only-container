@@ -7,7 +7,7 @@ CONTAINER_IF="eth1"
 VETH_HOST="veth-host$CTR_ID"
 VETH_GUEST="veth-guest$CTR_ID"
 PRIMARY=`ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//"`
-BRIDGE_ISUP=`ip link show | grep "$BRIDGE:.*state UP"`
+BRIDGE_ISUP=`ip link show | grep "$BRIDGE:.*"`
 
 if [[ -z "$BRIDGE_ISUP" ]]; then
 	# Create new bridge

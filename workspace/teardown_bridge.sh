@@ -6,7 +6,8 @@ VETH_HOST="veth-host$2"
 VETH_GUEST="veth-guest$2"
 
 # remove iptables TEE rule
-iptables -t mangle -D PREROUTING -i $PRIMARY -j TEE --gateway 192.168.10.10$3
+iptables -t mangle -F
+#iptables -t mangle -D PREROUTING -i $PRIMARY -j TEE --gateway 192.168.10.$2
 
 # delete veth pair
 ip link del $VETH_HOST
