@@ -33,7 +33,7 @@ fi
             },
             {
                 "type": "network",
-				"path": "/var/run/netns/runc$CTR_ID"
+                "path": "/var/run/netns/runc$CTR_ID"
             },
             {
                 "type": "ipc"
@@ -162,37 +162,41 @@ fi
                 "CAP_AUDIT_WRITE",
                 "CAP_SETGID",
                 "CAP_SETUID",
-                "CAP_NET_BIND_SERVICE"
+                "CAP_NET_BIND_SERVICE",
+                "CAP_NET_RAW",
+                "CAP_NET_ADMIN"
             ],
             "bounding": [
                 "CAP_AUDIT_WRITE",
                 "CAP_SETGID",
                 "CAP_SETUID",
                 "CAP_NET_BIND_SERVICE",
-				"CAP_NET_RAW",
-				"CAP_NET_ADMIN"
+                "CAP_NET_RAW",
+                "CAP_NET_ADMIN"
             ],
             "effective": [
                 "CAP_AUDIT_WRITE",
                 "CAP_SETGID",
                 "CAP_SETUID",
                 "CAP_NET_BIND_SERVICE",
-				"CAP_NET_RAW",
-				"CAP_NET_ADMIN"
+                "CAP_NET_RAW",
+                "CAP_NET_ADMIN"
             ],
             "inheritable": [
                 "CAP_AUDIT_WRITE",
                 "CAP_SETGID",
                 "CAP_SETUID",
-                "CAP_NET_BIND_SERVICE"
+                "CAP_NET_BIND_SERVICE",
+                "CAP_NET_RAW",
+                "CAP_NET_ADMIN"
             ],
             "permitted": [
                 "CAP_AUDIT_WRITE",
                 "CAP_SETGID",
                 "CAP_SETUID",
                 "CAP_NET_BIND_SERVICE",
-				"CAP_NET_RAW",
-				"CAP_NET_ADMIN"
+                "CAP_NET_RAW",
+                "CAP_NET_ADMIN"
             ]
         },
         "cwd": "$USR_HOME",
@@ -216,14 +220,14 @@ fi
             "uid": $REAL_UID
         }
     },
-	"hooks": {
-		"poststop": [
-			{
-				"path": "/bin/ip",
-				"args": ["ip", "link", "del", "eth1"]
-			}
-		]
-	},
+    "hooks": {
+        "poststop": [
+            {
+                "path": "/bin/ip",
+                "args": ["ip", "link", "del", "eth1"]
+            }
+        ]
+    },
     "root": {
         "path": "$ROOTFS",
         "readonly": true
