@@ -16,9 +16,6 @@ CTR_ID=$((RANDOM % 255))
 # Create workspace
 /usr/bin/sudo /bin/mkdir -p $WORK_DIR
 
-# Set up capabilities
-/usr/bin/sudo $CWD/set_capabilities.sh
-
 # Set up bridge network and iptables
 /usr/bin/sudo $CWD/setup_bridge.sh $BRIDGE $CTR_ID
 

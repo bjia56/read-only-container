@@ -7,7 +7,11 @@ WORK_DIR=$4
 ROOTFS=$WORK_DIR/rootfs
 X11_DIR=$WORK_DIR/.X11-unix
 OVERLAY_HOME=$WORK_DIR/overlay_home
-OVERLAY_WORKDIR=$WORK_DIR/overlay_work
+OVERLAY_HOME_WORKDIR=$WORK_DIR/overlay_home_work
+OVERLAY_BIN=$WORK_DIR/overlay_bin
+OVERLAY_BIN_WORKDIR=$WORK_DIR/overlay_bin_work
+OVERLAY_USR_SBIN=$WORK_DIR/overlay_usr_sbin
+OVERLAY_USR_SBIN_WORKDIR=$WORK_DIR/overlay_usr_sbin_work
 UUID=$5
 USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
 CALLING_USR_NAME=$(logname)
@@ -22,8 +26,15 @@ CTR_ID=$6
 /bin/mkdir -p $ROOTFS
 
 # Create overlayfs workspace
+# overlayfs on $HOME allows applications to manage dotfiles without error
+# overlayfs on /bin allows safe capability modifications to /bin/ping
+# overlayfs on /usr/sbin allows safe capability modifications to /usr/sbin/tcpdump
 /bin/mkdir -p $OVERLAY_HOME
-/bin/mkdir -p $OVERLAY_WORKDIR
+/bin/mkdir -p $OVERLAY_HOME_WORKDIR
+/bin/mkdir -p $OVERLAY_BIN
+/bin/mkdir -p $OVERLAY_BIN_WORKDIR
+/bin/mkdir -p $OVERLAY_USR_SBIN
+/bin/mkdir -p $OVERLAY_USR_SBIN_WORKDIR
 
 # Create X11 proxy
 if [ -n "$DISPLAY" ]; then
@@ -43,7 +54,7 @@ if [ -n "$DISPLAY" ]; then
 fi
 
 /bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_HOME
-/bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_WORKDIR
+/bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_HOME_WORKDIR
 
 # Make config
 $CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $CTR_ID $DISPLAY_NUM > $WORK_DIR/config.json
@@ -51,13 +62,20 @@ $CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $CTR_I
 # Mount root with bindfs
 /usr/bin/bindfs -r / $ROOTFS
 
-# Mask $HOME with overlayfs workspace
-/bin/mount -t overlay overlay -o lowerdir=$ROOTFS$USR_HOME,upperdir=$OVERLAY_HOME,workdir=$OVERLAY_WORKDIR $ROOTFS$USR_HOME
+# Mask $HOME, /bin, /usr/sbin with overlayfs workspace
+/bin/mount -t overlay overlay -o lowerdir=$ROOTFS$USR_HOME,upperdir=$OVERLAY_HOME,workdir=$OVERLAY_HOME_WORKDIR $ROOTFS$USR_HOME
+/bin/mount -t overlay overlay -o lowerdir=$ROOTFS/bin,upperdir=$OVERLAY_BIN,workdir=$OVERLAY_BIN_WORKDIR $ROOTFS/bin
+/bin/mount -t overlay overlay -o lowerdir=$ROOTFS/usr/sbin,upperdir=$OVERLAY_USR_SBIN,workdir=$OVERLAY_USR_SBIN_WORKDIR $ROOTFS/usr/sbin
+
+# Modify capabilities of certain overlay files
+$CWD/set_capabilities.sh $ROOTFS
 
 # Run container
 /usr/local/sbin/runc run -b $WORK_DIR $UUID
 
 # Teardown overlay
+/bin/umount $ROOTFS/usr/sbin
+/bin/umount $ROOTFS/bin
 /bin/umount $ROOTFS$USR_HOME
 
 # Teardown bindfs
