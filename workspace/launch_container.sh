@@ -7,7 +7,7 @@ WORK_DIR=$4
 ROOTFS=$WORK_DIR/rootfs
 X11_DIR=$WORK_DIR/.X11-unix
 OVERLAY_HOME=$WORK_DIR/overlay_home
-OVERLAY_WORKDIR=$WORK_DIR/overlay_work
+OVERLAY_HOME_WORKDIR=$WORK_DIR/overlay_home_work
 UUID=$5
 USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
 CALLING_USR_NAME=$(logname)
@@ -22,8 +22,9 @@ CTR_ID=$6
 /bin/mkdir -p $ROOTFS
 
 # Create overlayfs workspace
+# overlayfs on $HOME allows applications to manage dotfiles without error
 /bin/mkdir -p $OVERLAY_HOME
-/bin/mkdir -p $OVERLAY_WORKDIR
+/bin/mkdir -p $OVERLAY_HOME_WORKDIR
 
 # Create X11 proxy
 if [ -n "$DISPLAY" ]; then
@@ -43,7 +44,7 @@ if [ -n "$DISPLAY" ]; then
 fi
 
 /bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_HOME
-/bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_WORKDIR
+/bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_HOME_WORKDIR
 
 # Make config
 $CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $CTR_ID $DISPLAY_NUM > $WORK_DIR/config.json
@@ -51,8 +52,8 @@ $CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $CTR_I
 # Mount root with bindfs
 /usr/bin/bindfs -r / $ROOTFS
 
-# Mask $HOME with overlayfs workspace
-/bin/mount -t overlay overlay -o lowerdir=$ROOTFS$USR_HOME,upperdir=$OVERLAY_HOME,workdir=$OVERLAY_WORKDIR $ROOTFS$USR_HOME
+# Mask $HOME, /bin, /usr/sbin with overlayfs workspace
+/bin/mount -t overlay overlay -o lowerdir=$ROOTFS$USR_HOME,upperdir=$OVERLAY_HOME,workdir=$OVERLAY_HOME_WORKDIR $ROOTFS$USR_HOME
 
 # Run container
 /usr/local/sbin/runc run -b $WORK_DIR $UUID
