@@ -17,5 +17,6 @@ ip netns del $NEW_NS
 
 # delete bridge
 # not sure when to do this if multiple containers, when no veth-hosts left
+# iptables -D INPUT -i $BRIDGE -j DROP
 # ip link set $BRIDGE down
 # brctl delbr $BRIDGE

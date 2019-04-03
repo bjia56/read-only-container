@@ -10,12 +10,15 @@ PRIMARY=`ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//"`
 BRIDGE_ISUP=`ip link show | grep "$BRIDGE:.*"`
 
 if [[ -z "$BRIDGE_ISUP" ]]; then
-	# Create new bridge
-	brctl addbr $BRIDGE
+    # Create new bridge
+    brctl addbr $BRIDGE
 
-	# associate w ip address
-	ip link set $BRIDGE up
-	ip addr add 192.168.10.1/24 dev $BRIDGE
+    # associate w ip address
+    ip link set $BRIDGE up
+    ip addr add 192.168.10.1/24 dev $BRIDGE
+
+    # iptables rule to drop packets from container
+    iptables -A INPUT -i $BRIDGE -j DROP
 fi
 
 # create linux veth device pair
@@ -30,5 +33,5 @@ ip netns exec $NEW_NS ip link set $VETH_GUEST name $CONTAINER_IF
 ip netns exec $NEW_NS ip addr add 192.168.10.$CTR_ID/24 dev $CONTAINER_IF
 ip netns exec $NEW_NS ip link set $CONTAINER_IF up
 
-# IPtables rule to duplicate packets to container
+# iptables rule to duplicate packets to container
 iptables -t mangle -A PREROUTING -i $PRIMARY -j TEE --gateway 192.168.10.$CTR_ID
