@@ -6,7 +6,6 @@ NEW_NS="runc$CTR_ID"
 CONTAINER_IF="eth1"
 VETH_HOST="veth-host$CTR_ID"
 VETH_GUEST="veth-guest$CTR_ID"
-PRIMARY=`ip route | grep default | sed -e "s/^.*dev.//" -e "s/.proto.*//"`
 BRIDGE_ISUP=`ip link show | grep "$BRIDGE:.*"`
 
 if [[ -z "$BRIDGE_ISUP" ]]; then
@@ -34,4 +33,4 @@ ip netns exec $NEW_NS ip addr add 192.168.10.$CTR_ID/24 dev $CONTAINER_IF
 ip netns exec $NEW_NS ip link set $CONTAINER_IF up
 
 # iptables rule to duplicate packets to container
-iptables -t mangle -A PREROUTING -i $PRIMARY -j TEE --gateway 192.168.10.$CTR_ID
+iptables -t mangle -A PREROUTING -j TEE --gateway 192.168.10.$CTR_ID
