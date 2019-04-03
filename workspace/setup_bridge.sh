@@ -29,7 +29,6 @@ ip link set $VETH_GUEST netns $NEW_NS
 ip netns exec $NEW_NS ip link set $VETH_GUEST name $CONTAINER_IF
 ip netns exec $NEW_NS ip addr add 192.168.10.$CTR_ID/24 dev $CONTAINER_IF
 ip netns exec $NEW_NS ip link set $CONTAINER_IF up
-ip netns exec $NEW_NS ip route add default via 192.168.10.1
 
 # IPtables rule to duplicate packets to container
 iptables -t mangle -A PREROUTING -i $PRIMARY -j TEE --gateway 192.168.10.$CTR_ID
