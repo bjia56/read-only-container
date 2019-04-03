@@ -13,6 +13,17 @@ BRIDGE="runc0"
 # also determines guest ip in bridge network
 CTR_ID=$((RANDOM % 255))
 
+if [ -n "$1" ]; then
+    if [ "$1" = "shutdown" ]; then
+        /usr/bin/sudo $CWD/teardown_bridge.sh $BRIDGE - shutdown
+    else
+        >&2 echo "invalid option"
+        exit 1
+    fi
+    exit 0
+fi
+
+
 # Create workspace
 /usr/bin/sudo /bin/mkdir -p $WORK_DIR
 
