@@ -16,11 +16,11 @@ CTR_ID=$((RANDOM % 255))
 if [ -n "$1" ]; then
     if [ "$1" = "shutdown" ]; then
         /usr/bin/sudo $CWD/teardown_bridge.sh $BRIDGE - shutdown
+        exit 0
     else
-        >&2 echo "invalid option"
+        >&2 /bin/echo "invalid option"
         exit 1
     fi
-    exit 0
 fi
 
 

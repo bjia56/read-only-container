@@ -6,20 +6,20 @@ VETH_HOST="veth-host$2"
 VETH_GUEST="veth-guest$2"
 
 if [ "$3" = "shutdown" ]; then
-    echo "shutting down bridge"
+    /bin/echo "shutting down bridge"
 
     # delete bridge
-    iptables -D INPUT -i $BRIDGE -j DROP
-    ip link set $BRIDGE down
-    brctl delbr $BRIDGE
+    /sbin/iptables -D INPUT -i $BRIDGE -j DROP
+    /bin/ip link set $BRIDGE down
+    /sbin/brctl delbr $BRIDGE
     exit 0
 fi
 
 # remove iptables TEE rule
-iptables -t mangle -D PREROUTING -j TEE --gateway 192.168.10.$2
+/sbin/iptables -t mangle -D PREROUTING -j TEE --gateway 192.168.10.$2
 
 # delete veth pair
-ip link del $VETH_HOST
+/bin/ip link del $VETH_HOST
 
 # delete namespace
-ip netns del $NEW_NS
+/bin/ip netns del $NEW_NS

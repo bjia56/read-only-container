@@ -10,9 +10,8 @@ OVERLAY_HOME=$WORK_DIR/overlay_home
 OVERLAY_HOME_WORKDIR=$WORK_DIR/overlay_home_work
 UUID=$5
 USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
-CALLING_USR_NAME=$(logname)
 CWD=$(/usr/bin/dirname "$0")
-HOSTNAME=$(hostname)
+HOSTNAME=$(/bin/hostname)
 CTR_ID=$6
 
 # Create workspace with tmpfs
@@ -26,28 +25,19 @@ CTR_ID=$6
 /bin/mkdir -p $OVERLAY_HOME
 /bin/mkdir -p $OVERLAY_HOME_WORKDIR
 
+# Create X11 directory in case it is needed
+/bin/mkdir -p $X11_DIR
+
 # Create X11 proxy
 if [ -n "$DISPLAY" ]; then
-    TMP=${DISPLAY#*:}
-    DISPLAY_NUM=${TMP%.*}
-
-    /bin/mkdir -p $X11_DIR
-    /usr/bin/touch $OVERLAY_HOME/.Xauthority
-
-    # Get the xauth info for the calling user
-    XAUTH_INFO=$(HOME=$(/usr/bin/getent passwd "$CALLING_USR_NAME" | /usr/bin/cut -d: -f6); /usr/bin/xauth list $DISPLAY | cut -d ' ' -f 3,5)
-    (HOME=$OVERLAY_HOME; /usr/bin/xauth add :$DISPLAY_NUM $XAUTH_INFO)
-
-    /bin/chown -R $REAL_UID:$REAL_GID $X11_DIR
-
-    /usr/bin/sudo -u \#$REAL_UID /usr/bin/socat unix-listen:$X11_DIR/X$DISPLAY_NUM,fork,unlink-early tcp-connect:localhost:$((6000 + $DISPLAY_NUM)) &
+    $CWD/setup_x11.sh $REAL_UID $REAL_GID $X11_DIR $OVERLAY_HOME
 fi
 
 /bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_HOME
 /bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_HOME_WORKDIR
 
 # Make config
-$CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $CTR_ID $DISPLAY_NUM > $WORK_DIR/config.json
+$CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $CTR_ID > $WORK_DIR/config.json
 
 # Mount root with bindfs
 /usr/bin/bindfs -r / $ROOTFS
@@ -66,10 +56,7 @@ $CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $CTR_I
 
 # Teardown X11 proxy
 if [ -n "$DISPLAY" ]; then
-    X11_PROXY_PIDS=$(ps -ef | grep socat | grep $UUID | awk '{print $2}' | tr -s '\n' ' ')
-    if [ -n "$X11_PROXY_PIDS" ]; then
-        kill $X11_PROXY_PIDS
-    fi
+    $CWD/teardown_x11.sh $UUID
 fi
 
 # Clean up tmpfs
