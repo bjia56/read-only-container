@@ -15,7 +15,8 @@ if [ "$3" = "shutdown" ]; then
     exit 0
 fi
 
-# remove iptables TEE rule
+# remove iptables TEE rules
+/sbin/iptables -t mangle -D POSTROUTING -j TEE --gateway 192.168.10.$2
 /sbin/iptables -t mangle -D PREROUTING -j TEE --gateway 192.168.10.$2
 
 # delete veth pair
