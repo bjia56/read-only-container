@@ -18,11 +18,11 @@ if [ -n "$1" ]; then
         /usr/bin/sudo $CWD/teardown_bridge.sh $BRIDGE - shutdown
         exit 0
     else
-        >&2 /bin/echo "invalid option"
-        exit 1
+        CONTAINER_CMD=$@
     fi
+else
+    CONTAINER_CMD="/bin/bash"
 fi
-
 
 # Create workspace
 /usr/bin/sudo /bin/mkdir -p $WORK_DIR
@@ -31,7 +31,7 @@ fi
 /usr/bin/sudo $CWD/setup_bridge.sh $BRIDGE $CTR_ID
 
 # Run the container launcher under its own fs namespace
-/usr/bin/sudo /usr/bin/unshare -fm $CWD/launch_container.sh $REAL_UID $REAL_GID "$PATH" $WORK_DIR $UUID $CTR_ID
+/usr/bin/sudo /usr/bin/unshare -fm $CWD/launch_container.sh $REAL_UID $REAL_GID "$PATH" $WORK_DIR $UUID $CTR_ID "$CONTAINER_CMD"
 wait
 
 # Cleanup

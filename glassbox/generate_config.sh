@@ -5,6 +5,7 @@ USR_PATH=$3
 WORK_DIR=$4
 ROOTFS=$5
 CTR_ID=$6
+CONTAINER_CMD=$7
 HOSTNAME=$(/bin/hostname)
 USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
 
@@ -14,6 +15,21 @@ if [ -n "$DISPLAY" ]; then
     DISPLAY_ENV="\"DISPLAY=:$DISPLAY_NUM.0\","
     DISPLAY_MOUNT="{\"destination\":\"/tmp/.X11-unix\", \"source\":\"$WORK_DIR/.X11-unix\", \"options\":[\"bind\", \"rw\"]},"
 fi
+
+format_container_cmd() {
+    local FIRST=true
+
+    for TMP in $@; do
+        if [ -z "$FIRST" ]; then
+            echo ", \"$TMP\""
+        else
+            echo "  \"$TMP\""
+            unset FIRST
+        fi
+    done
+}
+
+CONTAINER_CMD=$(format_container_cmd "$CONTAINER_CMD")
 
 /bin/cat << EOF
 {
@@ -156,7 +172,7 @@ fi
     "ociVersion": "1.0.1-dev",
     "process": {
         "args": [
-            "/bin/bash"
+            $CONTAINER_CMD
         ],
         "capabilities": {
             "ambient": [

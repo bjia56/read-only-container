@@ -13,6 +13,7 @@ USR_HOME=$(/usr/bin/getent passwd "$REAL_UID" | /usr/bin/cut -d: -f6)
 CWD=$(/usr/bin/dirname "$0")
 HOSTNAME=$(/bin/hostname)
 CTR_ID=$6
+CONTAINER_CMD=$7
 
 # Create workspace with tmpfs
 /bin/mount -t tmpfs -o size=4m,nr_inodes=1k,mode=777 tmpfs $WORK_DIR
@@ -37,7 +38,7 @@ fi
 /bin/chown -R $REAL_UID:$REAL_GID $OVERLAY_HOME_WORKDIR
 
 # Make config
-$CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $CTR_ID > $WORK_DIR/config.json
+$CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $CTR_ID "$CONTAINER_CMD" > $WORK_DIR/config.json
 
 # Mount root with bindfs
 /usr/bin/bindfs -r / $ROOTFS
