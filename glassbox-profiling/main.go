@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/prometheus/procfs"
+	"github.com/bjia56/procfs"
 )
 
 var fs procfs.FS
