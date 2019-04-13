@@ -4,4 +4,6 @@ set key autotitle columnhead
 set term postscript enhanced color font 'Verdana' size 24,10
 set output "output.ps"
 set key outside
+set xlabel "Time (ms)"
+set ylabel "Memory (KB)"
 plot for [i=1:words(LABELS)] sprintf("%s.fragment.csv", word(LABELS,i)) u 1:3 with linespoints pointinterval 100 title word(LABELS,i) noenhanced
