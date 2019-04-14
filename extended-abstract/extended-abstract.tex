@@ -1,5 +1,9 @@
 \documentclass{proc}
 \usepackage{url}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{eso-pic}
+\usepackage{picture}
 \linespread{1.2}
 
 \begin{document}
@@ -74,8 +78,17 @@ Include future work
 
 \section*{7. Conclusions}
 
-\Include conclusions, mention there is more work to be done to improve the container and add additional features
+Include conclusions, mention there is more work to be done to improve the container and add additional features
 
 \bibliographystyle{abbrv}
 \bibliography{extended-abstract}
+
+\clearpage
+
+\section*{Appendix A}
+
+\AddToShipoutPicture*{
+    \put(.5\paperwidth,.5\paperheight){\makebox(0,0){\includegraphics[scale=1]{memdata.eps}}}
+}
+
 \end{document}
