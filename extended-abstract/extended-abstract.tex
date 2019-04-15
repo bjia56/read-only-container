@@ -1,5 +1,6 @@
 \documentclass{proc}
 \usepackage{url}
+\def\UrlBreaks{\do\/\do-}
 \usepackage{graphicx}
 \usepackage{epstopdf}
 \usepackage{eso-pic}
@@ -26,7 +27,7 @@ Aside from monitoring of host system data and statistics, often system administr
 
 An early solution to the problem of fault tolerance is to utilize virtual machines to guarantee isolation between processes \cite{garfinkel2003terra}. However, while virtual machines can indeed be used to provide an isolated environment for untrusted code execution \cite{wen2012virtualization}, recent performance comparisons between hypervisor-based virtualization and container-based (i.e. lightweight or kernel-based) virtualization show that virtual machines exhibit more overhead with certain workloads when compared to kernel-supported container mechanisms \cite{felter2014docker, morabito2015hypervisors}.
 
-Instead of fault tolerance through hardware virtualization by way of virtual machines, recent work has emphasized ensuring fault tolerance through operating system virtualization \cite{soltesz2007container}. An early approach to operating system virtualization introduces a kernel interposition method to restrict an application's access to certain system calls (syscalls), as implemented in Janus \cite{goldberg1996janus} and later in MBOX \cite{kim2013mbox}. Other sandboxing mechanisms have been introduced, including new system calls to create kernel-supported process isolation called jails \cite{kamp2000jails}, new filesystem tools leveraging \texttt{mount} and \texttt{chroot} to restrict filesystem access \cite{prevelakis2001fmac}, namespace isolation to create kernel-supported process containers \cite{biederman2006namespaces, menage2007containers}, and control groups (cgroups) to limit resource consumption of a group of processes \cite{menagecgroups}.
+Instead of fault tolerance through hardware virtualization by way of virtual machines, recent work has emphasized ensuring fault tolerance through operating system virtualization \cite{soltesz2007container}. An early approach to operating system virtualization introduces a kernel interposition method to restrict an application's access to certain system calls (syscalls), as implemented in Janus \cite{goldberg1996janus} and later in MBOX \cite{kim2013mbox}. Other sandboxing mechanisms have been introduced, including new system calls to create kernel-supported process isolation called jails \cite{kamp2000jails}, new filesystem tools leveraging \texttt{mount} and \texttt{chroot} to restrict filesystem access \cite{prevelakis2001fmac}, namespace isolation to create kernel-supported process containers \cite{biederman2006namespaces, menage2007containers}, and control groups (\textit{cgroups}) to limit resource consumption of a group of processes \cite{menagecgroups}.
 
 Modern containers combine these operating system virtualization approaches to create lightweight isolated execution contexts. The industry standard choice for Linux container technology is Docker, which combines Linux \textit{cgroups}, \textit{namespaces}, \textit{capabilities}, and more using its custom container runtime, \textit{libcontainer} \cite{hykes2014libcontainer}. With the formation of the Open Container Initiative (OCI) in 2015 \cite{opencontainerinitiative}, the design and construction of container platforms became standardized with OCI's \textit{runtime-spec} and \textit{image-spec}, providing a framework for distributors to develop their own cross-compatible container implementations.
 
@@ -34,52 +35,64 @@ In our research, we present \textit{GlassBox}, a system to provide fault-toleran
 
 \section*{2. Containers}
 
-Linux supports the creation of isolated filesystem environments through \texttt{chroot} jails and \texttt{mount} namespaces. While \texttt{chroot} changes the root filesystem directory for a process, \texttt{mount} namespaces allow for flexibility of what directory the process sees as the filesystem root and security of the overall filesystem on the host. Bind mounts (\texttt{mount} command with the \texttt{--bind} option) in particular make a subset of a host's filesystem visible at a second mount point \cite{bindmount}, with the option of mounting it as `read-only.' This kind of `symbolic link' allows for a specific view of the filesystem namespace. By bind mounting the root directory or \texttt{/proc}, host information becomes readable by a jailed process otherwise closed off from the filesystem. Indeed, bind mounts can currently be used with Docker containers to provide visibility to certain files on the host filesystem while keeping the containers' stong isolation guarantees \cite{dockerdoc}.
+Linux supports the creation of isolated filesystem environments through \texttt{chroot} jails and \texttt{mount} namespaces. While \texttt{chroot} changes the root filesystem directory for a process, \texttt{mount} namespaces allow for flexibility of what directory the process sees as the filesystem root and security of the overall filesystem on the host. Bind mounts (\texttt{mount} command with the \texttt{--bind} option) in particular make a subset of a host's filesystem visible at a second mount point \cite{bindmount}, with the option of mounting it as ``read-only.'' This kind of ``symbolic link'' allows for a specific view of the filesystem namespace. By bind mounting the root directory or \texttt{/proc}, host information becomes readable by a jailed process otherwise closed off from the filesystem. Indeed, bind mounts can currently be used with Docker containers to provide visibility to certain files on the host filesystem while keeping the containers' stong isolation guarantees \cite{dockerdoc}.
 
 Host-monitoring applications isolated in read-only filesystems may also need a place to temporarily store the output of its monitoring. \texttt{tmpfs} can be used to store temporary data in RAM rather than on disk. Furthermore, the size can be limited to prevent a host-monitoring program from consuming too much memory. When combined with Docker, a \texttt{tmpfs} mount is persisted in host memory while the container runs, and removed when a container stops.
 
 Linux also supports syscall filtering via \texttt{seccomp-bpf} filters, which are used in conjunction with other container primitives to implement containerization in Docker, LXC, etc. Currently, the container runtime \textit{runC} (built on its predecessor \textit{libcontainer} \cite{hykes2014libcontainer}) uses \texttt{seccomp-bpf} to perform syscalls interposition \cite{opencontainerinitiative}. The rule-based filtering of existing \textit{seccomp-bpf} in Linux, however, does not allow for more advanced access control policy validation or syscall emulation \cite{seccompuserspace}.
 
-Commercial container solutions such as Docker and rkt offer pre-built networking options to faciliate networking connectivity between the container and the host \cite{dockernetworking, rktnetworking}.
+Commercial container solutions such as Docker and rkt offer pre-built networking options to faciliate networking connectivity between the container and the host \cite{dockernetworking, rktnetworking}. The two general categories of network connectivity offered are \textit{host} and \textit{container}, both built on the network separation properties provided by Linux network namespaces. \textit{Host} network configurations set up the container to share the same network namespace as that of the calling process, effectively giving the container the same network access and network configuration as the parent process. \textit{Container} network configurations create a separate network namespace for the container, separating its connectivity from the network namespace of the parent process. In \textit{container} network configurations, a network bridge and virtual ethernet devices are used to connect the container's network with the host, effectively exposing the container as a new ``host'' connected to the host machine.
 
-\section*{3. Read-only Host Monitoring}
+CPU and memory usage can also be restricted in existing container solutions through the use of Linux capabilities and \textit{cgroups} \cite{dockerconstraints}. As \textit{cgroups} function to group a set of processes under the same ``control group'' for broad resource control and process management \cite{menagecgroups}, container implementations such as Docker use \textit{cgroups} to fine-tune the memory and CPU-time allowances of the group of processes running in a container. Additionally, Linux capabilities can be used to give the container permission to modify its process scheduler directly in the host kernel, such as setting \textit{nice} values or use the Linux \textit{realtime} process scheduler.
 
-Include information about theorietical container functionality
+\section*{3. Fault-Tolerant Host Monitoring}
+
+We postulate that an ideal fault-tolerant host monitoring system should observe the following two characteristics:
+\begin{enumerate}
+    \item The system should be able to accurately view the host's state, both volatile (e.g. in-memory) and persistent (e.g. on-disk), as needed by the information the system is monitoring.
+    \item The system's execution, both in normal and abnormal circumstances, must guarantee that stability of the host machine is maintained.
+\end{enumerate}
+
+An accurate view of the host's state is required for the host monitoring system to be useful. For example, the \texttt{top} program, which monitors system memory and CPU usage by process, requires access to volatile information to function correctly (in this case, the \texttt{/proc} virtual file system). It is easy to imagine that the \texttt{top} tool would not function correctly or be nearly as useful if \texttt{/proc} did not exist, or if reading from \texttt{/proc} yielded incorrect or invalid data.
+
+On the other hand, a strong guarantee that the monitoring system's execution maintains the stability of the host machine is required to ensure fault-tolerance. We define the property of maintaining a host's \textit{stability} as ``preventing any modification of volatile and persistent data or usage of computing resources that could, now or in the future, alter the execution or responsiveness of the host or applications on the host.'' In other words, the monitoring system should ensure that it accesses memory and storage outside of the monitor in a strictly read-only fashion, should not send any signals or messages to existing processes, and should not starve the host of shared resources.
+
+% discuss tradeoffs of accurate monitoring and fault-tolerance
 
 \section*{4. GlassBox Implementation}
 
-Include information about container implementation
+%Include information about container implementation
 
-GlassBox provides an isolation mechanism for read-only host monitoring. We used bindfs/FUSE filesystem, OverlayFS filesystem, Linux tmpfs temporary file storage, the \texttt{iptables} utility, and Linux namespaces and capabilities in conjunction with the runC container runtime to grant read-only access to system information such as CPU load, process information, memory usage, and network traffic. GlassBox relaxes the isolation provided by containers like Docker. As a proof-of-concept it made sense to extend runC to implement our read-only isolation, rather than building our own container. Additionally, the runC component of GlassBox can be easily swapped out for a different container runtime such as LXC or rkt. 
+GlassBox provides an isolation mechanism for read-only host monitoring. We used bindfs/FUSE filesystem, OverlayFS filesystem, Linux tmpfs temporary file storage, the \texttt{iptables} utility, and Linux namespaces and capabilities in conjunction with the runC container runtime to grant read-only access to system information such as CPU load, process information, memory usage, and network traffic. GlassBox relaxes the isolation provided by containers like Docker. As a proof-of-concept it made sense to extend runC to implement our read-only isolation, rather than building our own container. Additionally, the runC component of GlassBox can be easily swapped out for a different container runtime such as LXC or rkt.
 
 Most host-monitoring tools, from simple commands that ship with Linux to complex graphical tools, all rely on a few Linux interfaces such as the \texttt{/proc} and \texttt{/sys} directories. To provide read-only access to these, we used a read-only bind mount. %% More words
 
-GlassBox provides networking to containers via a bridge network. Each GlassBox instance has a network namespace to present the container its own network stack, routes, firewall rules, and network devices. Before the first container instance is launched, GlassBox creates the bridge network on the host and assigns an IP address. Then, for each container, we create a Linux Virtual Ethernet (veth) device pair in the host network namespace. The host end of the pair is added to bridge network in the host network namespace, and the guest end is moved to the guest network namespace and added as an interface. The veth pair acts as a tunnel between the bridge network and the guest network namespace. By default, the guest end of the veth pair is the only exposed interface in the container. Each guest-end of the veth pair is associated with an IP \texttt{192.168.10.<container id>}, where the id is a random integer between 0-255. The namespace object for the container lives at \texttt{/var/run/netns/runc<containerid>}. 
+GlassBox provides networking to containers via a bridge network. Each GlassBox instance has a network namespace to present the container its own network stack, routes, firewall rules, and network devices. Before the first container instance is launched, GlassBox creates the bridge network on the host and assigns an IP address. Then, for each container, we create a Linux Virtual Ethernet (veth) device pair in the host network namespace. The host end of the pair is added to bridge network in the host network namespace, and the guest end is moved to the guest network namespace and added as an interface. The veth pair acts as a tunnel between the bridge network and the guest network namespace. By default, the guest end of the veth pair is the only exposed interface in the container. Each guest-end of the veth pair is associated with an IP \texttt{192.168.10.<container id>}, where the id is a random integer between 0-255. The namespace object for the container lives at \texttt{/var/run/netns/runc<containerid>}.
 
-We create read-only behavior using \texttt{iptables} to restrict network packets. The \texttt{netfilter/iptables} utility uses a series of tables, each of which define firewall rules to filter or transform packets. To allow GlassBox to listen on the host's network traffic, we apply an iptables rule (\texttt{TEE}) that clones the packet and redirects it to our gateway IP. To prevent GlassBox processes from sending packets to (and potentially spamming) the host, we specify the iptables rule (\texttt{DROP}) to drop outgoing packets. 
+We create read-only behavior using \texttt{iptables} to restrict network packets. The \texttt{netfilter/iptables} utility uses a series of tables, each of which define firewall rules to filter or transform packets. To allow GlassBox to listen on the host's network traffic, we apply an iptables rule (\texttt{TEE}) that clones the packet and redirects it to our gateway IP. To prevent GlassBox processes from sending packets to (and potentially spamming) the host, we specify the iptables rule (\texttt{DROP}) to drop outgoing packets.
 
 Finally, Linux capabilities are required for the ability to monitor network traffic, specifically \texttt{CAP\_NET\_ADMIN} for listing all network interfaces, and \texttt{CAP\_NET\_RAW} to use raw sockets.
 
 \section*{4. Evaluation}
 
-We evaluated GlassBox on a range of host-monitoring and application performance monitoring tools. This includes Linux commands like \texttt{top} or \texttt{free}, more complex utilities like \texttt{sysstat} \cite{sysstat}, remote monitoring tools like \textit{GKrellM} \cite{gkrellm}, and graphical tools like \textit{Wireshark}, \textit{Cacti} \cite{cacti} and \textit{Nagios} \cite{nagios}. We also ensured that standard Unix tools (e.g. \texttt{awk, grep, vim, md5sum}) work correctly.
+We evaluated GlassBox on a range of host-monitoring and application performance monitoring tools. This includes Linux commands like \texttt{top} or \texttt{free}, more complex utilities like \texttt{sysstat} \cite{sysstat}, remote monitoring tools like \textit{GKrellM} \cite{gkrellm}, and graphical tools like \textit{Wireshark}, \textit{Cacti} \cite{cacti} and \textit{Nagios} \cite{nagios}. We also ensured that standard Unix tools (e.g. \texttt{awk}, \texttt{grep}, \texttt{vim}, \texttt{md5sum}) work correctly.
 \subsubsection*{4.2 Required Software}
 
 We will use the same Linux distribution on development VMs as those in the CLIC lab. Our other software is also open-source or free: standard system tools that ship with Linux, \textit{Cacti}, \textit{Nagios}, \textit{GKrellM}, \textit{sysstat}, and \textit{Docker}.
 
 \section*{5. GlassBox Performance}
 
-Include information about GlassBox experimental setup, including using tini as a lightweight userspace reaper to accurately track the container's process tree (since bindfs daemonizes)
+%Include information about GlassBox experimental setup, including using tini as a lightweight userspace reaper to accurately track the container's process tree (since bindfs daemonizes)
 
 We hypothesize that monitoring tools will be able to run successfully and access host information in our container, while incurring some small overhead. The overhead will likely be due to syscall interposition and setup/teardown related to managing read access to host filesystems. We hypothesize that monitoring directly on the host do not get the benefits of protection of host resources, while monitoring from inside a Docker container is possible, but requires additional configuration for read-only access, and even then may be too restrictive for certain tools to function correctly.
 
 \section*{6. Future Work}
 
-Include future work
+%Include future work
 
 \section*{7. Conclusions}
 
-Include conclusions, mention there is more work to be done to improve the container and add additional features
+%Include conclusions, mention there is more work to be done to improve the container and add additional features
 
 \bibliographystyle{abbrv}
 \bibliography{extended-abstract}
