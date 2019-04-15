@@ -60,19 +60,41 @@ On the other hand, a strong guarantee that the monitoring system's execution mai
 % discuss tradeoffs of accurate monitoring and fault-tolerance
 
 \section*{4. GlassBox Implementation}
-
+\begin{figure}
+\includegraphics[width=0.5\textwidth]{architecture}
+\caption{Architecture diagram}
+\end{figure}
 %Include information about container implementation
 
-GlassBox provides an isolation mechanism for read-only host monitoring. We used bindfs/FUSE filesystem, OverlayFS filesystem, Linux tmpfs temporary file storage, the \texttt{iptables} utility, and Linux namespaces and capabilities in conjunction with the runC container runtime to grant read-only access to system information such as CPU load, process information, memory usage, and network traffic. GlassBox relaxes the isolation provided by containers like Docker. As a proof-of-concept it made sense to extend runC to implement our read-only isolation, rather than building our own container. Additionally, the runC component of GlassBox can be easily swapped out for a different container runtime such as LXC or rkt.
+GlassBox is implemented on top of a runC container to provide an accurate, read-only view of the host state, including commonly monitored information such as CPU load, process information, memory usage, and network traffic. By read-only, we mean that changes to the host state either fail (for example, sending a kill signal to a process running on the host) or ephemeral (for example, writing to a file). Practically, read-only behavior guarantees the stability of the host. GlassBox uses bindfs/FUSE filesystem, OverlayFS filesystem, Linux tmpfs temporary file storage, the \texttt{iptables} utility, and Linux namespaces and capabilities, and the runC container runtime.
 
-Most host-monitoring tools, from simple commands that ship with Linux to complex graphical tools, all rely on a few Linux interfaces such as the \texttt{/proc} and \texttt{/sys} directories. To provide read-only access to these, we used a read-only bind mount. %% More words
+\subsection*{Root filesystem}
+We found that most host-monitoring tools, from simple commands that ship with Linux to complex graphical tools, all rely on a few Linux interfaces such as the \texttt{/proc} and \texttt{/sys} directories. By read-only bind-mounting the host's root to the container root, we make the host root filesystem available at these two mount points. Given access to the root file system, many tools like \texttt{top} can successfully collect statistics on the host. 
 
-GlassBox provides networking to containers via a bridge network. Each GlassBox instance has a network namespace to present the container its own network stack, routes, firewall rules, and network devices. Before the first container instance is launched, GlassBox creates the bridge network on the host and assigns an IP address. Then, for each container, we create a Linux Virtual Ethernet (veth) device pair in the host network namespace. The host end of the pair is added to bridge network in the host network namespace, and the guest end is moved to the guest network namespace and added as an interface. The veth pair acts as a tunnel between the bridge network and the guest network namespace. By default, the guest end of the veth pair is the only exposed interface in the container. Each guest-end of the veth pair is associated with an IP \texttt{192.168.10.<container id>}, where the id is a random integer between 0-255. The namespace object for the container lives at \texttt{/var/run/netns/runc<containerid>}.
+Host-monitoring tools may write temporary log files to the filesystem. GlassBox adds an ephemeral layer via tmpfs and overlay filesystems to enable the these host-monitoring tools to function properly, while also ensuring that the writes to the host filesystem are ephemeral. Figure 2 shows the setup. The \texttt{overlay\_home} directory is the writeable upper directory. The \texttt{overlay\_work} directory is a writeable layer created in tmpfs. The \texttt{overlay\_home} is mounted on top of the bind-mounted root filesystem, to present a unified view of the upper directory (which is writeable) and the underlying root directory tree (which is read-only). Writing to the overlay layer is eleting from the lower directory creates a 'whiteout'
+%%% more details
 
-We create read-only behavior using \texttt{iptables} to restrict network packets. The \texttt{netfilter/iptables} utility uses a series of tables, each of which define firewall rules to filter or transform packets. To allow GlassBox to listen on the host's network traffic, we apply an iptables rule (\texttt{TEE}) that clones the packet and redirects it to our gateway IP. To prevent GlassBox processes from sending packets to (and potentially spamming) the host, we specify the iptables rule (\texttt{DROP}) to drop outgoing packets.
+\subsection*{Networking}
+GlassBox provides networking to containers via a bridge network. Each GlassBox instance has a network namespace to present the container its own network stack, routes, firewall rules, and network devices. Before the first container instance is launched, GlassBox creates the bridge network on the host and assigns an IP address. For each container, a Linux Virtual Ethernet (veth) device pair is created in the host network namespace. The host end of the pair is added to bridge network in the host network namespace, and the guest end is moved to the guest network namespace and added as an interface. The veth pair is a full duplex link, and thus acts as a tunnel between the bridge network and the guest network namespace. By default, the guest end of the veth pair is the only exposed interface in the container. Each guest-end of the veth pair is associated with an IP \texttt{192.168.10.<container id>}, where the id is a random integer between 0-255. 
+We create read-only behavior using \texttt{iptables} to restrict network packets. The \texttt{netfilter/iptables} utility uses a series of tables, each of which define firewall rules to filter or transform packets. To allow GlassBox to listen on the host's network traffic, we apply an iptables rule (\texttt{TEE}) that clones the packet and redirects it to our gateway IP. To prevent GlassBox processes from sending packets to (and potentially spamming) the host, we specify the iptables rule (\texttt{DROP}) to drop outgoing packets. Thus, when multiple containers are connected to the same bridge network via veth pairs, each container cannot communicate with the host, nor with any other container. 
 
-Finally, Linux capabilities are required for the ability to monitor network traffic, specifically \texttt{CAP\_NET\_ADMIN} for listing all network interfaces, and \texttt{CAP\_NET\_RAW} to use raw sockets.
+Finally, runC provides configuration options for Linux capabilities to be set in a container. We set two capabilities by default, texttt{CAP\_NET\_ADMIN} for listing all network interfaces, and \texttt{CAP\_NET\_RAW} to use raw sockets, which enable monitoring of network traffic.
 
+One limitation of the networking setup is that the interfaces seen by GlassBox (for example, by running \texttt{ip addr} are different from those seen by the host. We consider this discrepancy acceptable, since practically, host monitoring tools such as \texttt{tcpdump, Wireshark} are interested in the network traffic rather than the the interfacs themselves. Since \texttt{TEE} clones the network packets, the IP source/destination appearing in packet captures still reflect the host interfaces. 
+
+
+\subsection*{X11 and Graphical Tool Support}
+
+
+
+
+
+\begin{figure}
+\includegraphics[width=0.5\textwidth]{fs_diagram}
+\caption{Filesystem setup}
+\end{figure}
+
+GlassBox relaxes the isolation provided by containers like Docker. For example, despite having a separate pid namespace, GlassBox exposes host process information via the \texttt{/proc} directory. Therefore, as a proof-of-concept it made sense to extend runC to implement our read-only isolation, rather than building our own container. Additionally, the runC component of GlassBox can be easily swapped out for a different container runtime such as LXC or rkt.
 \section*{4. Evaluation}
 
 We evaluated GlassBox on a range of host-monitoring and application performance monitoring tools. This includes Linux commands like \texttt{top} or \texttt{free}, more complex utilities like \texttt{sysstat} \cite{sysstat}, remote monitoring tools like \textit{GKrellM} \cite{gkrellm}, and graphical tools like \textit{Wireshark}, \textit{Cacti} \cite{cacti} and \textit{Nagios} \cite{nagios}. We also ensured that standard Unix tools (e.g. \texttt{awk}, \texttt{grep}, \texttt{vim}, \texttt{md5sum}) work correctly.
