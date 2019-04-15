@@ -7,14 +7,14 @@ default:
 	gnuplot plot.gnuplot
 
 open:
-	xdg-open output.ps &
+	xdg-open output.eps &
 
 clean:
 	rm header.tmp
 	rm mem.grouped.tmp
 	rm mem.grouped.csv
 	rm *.fragment.csv
-	rm *.ps
+	rm *.eps
 
 
 .PHONY: default open clean
