@@ -67,7 +67,11 @@ GlassBox provides an isolation mechanism that enables the creation of fault-tole
 
 Most host-monitoring tools, from simple commands that ship with Linux to complex graphical tools, all rely on a few Linux interfaces such as the \texttt{/proc} and \texttt{/sys} directories. To provide read-only access to these, we used a read-only bind mount. %% More words
 
+\subsection*{4.1 Filesystem}
+
 We used the bindfs filesystem (built on FUSE), OverlayFS filesystem, Linux tmpfs temporary file storage, the \texttt{iptables} utility, and Linux namespaces and capabilities in conjunction with the runC container runtime to grant read-only access to system information such as CPU load, process information, memory usage, and network traffic. GlassBox relaxes the isolation provided by containers like Docker.
+
+\subsection*{4.2 Networking}
 
 GlassBox provides networking to containers via a bridge network. Each GlassBox instance has a network namespace to present the container its own network stack, routes, firewall rules, and network devices. Before the first container instance is launched, GlassBox creates the bridge network on the host and assigns an IP address. Then, for each container, we create a Linux Virtual Ethernet (veth) device pair in the host network namespace. The host end of the pair is added to bridge network in the host network namespace, and the guest end is moved to the guest network namespace and added as an interface. The veth pair acts as a tunnel between the bridge network and the guest network namespace. By default, the guest end of the veth pair is the only exposed interface in the container. Each guest-end of the veth pair is associated with an IP \texttt{192.168.10.<container id>}, where the id is a random integer between 0-255. The namespace object for the container lives at \texttt{/var/run/netns/runc<containerid>}.
 
@@ -75,7 +79,9 @@ We create read-only behavior using \texttt{iptables} to restrict network packets
 
 Finally, Linux capabilities are required for the ability to monitor network traffic, specifically \texttt{CAP\_NET\_ADMIN} for listing all network interfaces, and \texttt{CAP\_NET\_RAW} to use raw sockets.
 
-% section about x11
+\subsection*{4.3 Graphical Display}
+
+% x11
 
 \section*{4. Evaluation}
 
