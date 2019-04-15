@@ -6,6 +6,6 @@ set key horizontal maxcolumns 3
 set xlabel "Time (ms)"
 set ylabel "Memory (KB)"
 set title "Memory usage over time, by process:PID"
-set term eps enhanced color size 8,8
+set term eps enhanced color size 6.5,8.5
 set output "output.eps"
 plot for [i=1:words(LABELS)] sprintf("%s.fragment.csv", word(LABELS,i)) u 1:3 with linespoints pointinterval 200 title word(LABELS,i) noenhanced
