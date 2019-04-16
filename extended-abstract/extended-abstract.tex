@@ -103,7 +103,7 @@ We create read-only behavior using \texttt{iptables} to restrict network packets
 
 Finally, runC provides configuration options for Linux capabilities to be set in a container. We set two capabilities by default, \texttt{CAP\_NET\_ADMIN} for listing all network interfaces, and \texttt{CAP\_NET\_RAW} to use raw sockets, which enable monitoring of network traffic.
 
-One limitation of the networking setup is that the interfaces seen by GlassBox (for example, by running \texttt{ip addr} are different from those seen by the host. We consider this discrepancy acceptable, since practically, host monitoring tools such as \texttt{tcpdump} and \textit{Wireshark} are interested in the network traffic rather than the the interfacs themselves. Since \texttt{TEE} clones the network packets, the IP source/destination appearing in packet captures still reflect the host interfaces.
+One limitation of the networking setup is that the interfaces seen by GlassBox (for example, by running \texttt{ip addr}) are different from those seen by the host. We consider this discrepancy acceptable, since practically, host monitoring tools such as \texttt{tcpdump} and \textit{Wireshark} are interested in the network traffic rather than the the interfacs themselves. Since \texttt{TEE} clones the network packets, the IP source/destination appearing in packet captures still reflect the host interfaces.
 
 \subsection*{4.4 Graphical Display}
 
@@ -117,25 +117,21 @@ The X11 protocol also defines a way for a client to authenticate to a remote ser
 
 \section*{4. Evaluation}
 
-We evaluated GlassBox on a range of host-monitoring and application performance monitoring tools. This includes Linux commands like \texttt{top} or \texttt{free}, more complex utilities like \texttt{sysstat} \cite{sysstat}, remote monitoring tools like \textit{GKrellM} \cite{gkrellm}, and graphical tools like \textit{Wireshark}, \textit{Cacti} \cite{cacti} and \textit{Nagios} \cite{nagios}. We also ensured that standard Unix tools (e.g. \texttt{awk}, \texttt{grep}, \texttt{vim}, \texttt{md5sum}) work correctly.
+We evaluated GlassBox on a range of host-monitoring and application performance monitoring tools. This includes Linux commands like \texttt{top} or \texttt{free}, more complex utilities like \texttt{sysstat} \cite{sysstat}, and graphical tools like \textit{Wireshark}. We have yet to try remote monitoring tools like \textit{GKrellM} \cite{gkrellm}, and other graphical tools such as \textit{Cacti} \cite{cacti} and \textit{Nagios} \cite{nagios}. We also ensured that standard Unix tools (e.g. \texttt{awk}, \texttt{grep}, \texttt{vim}, \texttt{md5sum}) work correctly.
 
-\subsubsection*{4.2 Required Software}
-
-We will use the same Linux distribution on development VMs as those in the CLIC lab. Our other software is also open-source or free: standard system tools that ship with Linux, \textit{Cacti}, \textit{Nagios}, \textit{GKrellM}, \textit{sysstat}, and \textit{Docker}.
+We will also evaluate malicious or buggy software, to show that our host is isolated/protected from misbehaving programs.
 
 \section*{5. GlassBox Performance}
 
 %Include information about GlassBox experimental setup, including using tini as a lightweight userspace reaper to accurately track the container's process tree (since bindfs daemonizes)
+We ran a preliminary memory profiler on GlassBox running in a Linux virtual machine. For our final results, we will run the profiler directly on a Linux machine, via Cloudlab. The memory profiler (Appendix A) traces memory usage across a 6s execution across 15-20 executables called by GlassBox. Runc itself requires 12 MB, and is the dominating memory cost. Other costs that remain consistent acrosss the execution of the container include the various structures we setup, such as the bindfs mount, and the socat connection between X11 server and client. Finally, many processes use memory during setup and teardown of the container.
 
-We hypothesize that monitoring tools will be able to run successfully and access host information in our container, while incurring some small overhead. The overhead will likely be due to syscall interposition and setup/teardown related to managing read access to host filesystems. We hypothesize that monitoring directly on the host do not get the benefits of protection of host resources, while monitoring from inside a Docker container is possible, but requires additional configuration for read-only access, and even then may be too restrictive for certain tools to function correctly.
+We will also measure startup and execution overhead of GlassBox, using a runC container without GlassBox as a baseline. We expect these measurements to be somewhat implementation dependent on the container runtime, so it may be useful to measure GlassBox with other container runtimes such as LXC. 
 
-\section*{6. Future Work}
-
-%Include future work
-
-\section*{7. Conclusions}
+\section*{6. Conclusions}
 
 %Include conclusions, mention there is more work to be done to improve the container and add additional features
+We hypothesize that monitoring tools will be able to run successfully and access host information in our container, while incurring some small overhead. The overhead will likely be due to syscall interposition and setup/teardown related to managing read access to host filesystems. We hypothesize that monitoring directly on the host do not get the benefits of protection of host resources, while monitoring from inside a Docker container is possible, but requires additional configuration for read-only access, and even then may be too restrictive for certain tools to function correctly.
 
 \bibliographystyle{abbrv}
 \bibliography{extended-abstract}
