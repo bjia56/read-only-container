@@ -5,4 +5,4 @@ if [ -z "$1" ]; then
 else
     DIR="$1"
 fi
-find $DIR -type f -exec rm -fv {} \;
+find $DIR -type b,c,p,f,l,s -exec rm -fv {} \;
