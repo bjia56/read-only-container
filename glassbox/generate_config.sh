@@ -136,6 +136,11 @@ CONTAINER_CMD=$(format_container_cmd "$CONTAINER_CMD")
         },
         $DISPLAY_MOUNT
         {
+            "destination": "/tmp/.proc",
+            "type": "proc",
+            "source": "proc"
+        },
+        {
             "destination": "/dev/mqueue",
             "options": [
                 "nosuid",
