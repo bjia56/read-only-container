@@ -43,7 +43,7 @@ $CWD/generate_config.sh $REAL_UID $REAL_GID "$USR_PATH" $WORK_DIR $ROOTFS $CTR_I
 # Mount root with bindfs
 /usr/bin/bindfs -r / $ROOTFS
 
-# Mask $HOME, /bin, /usr/sbin with overlayfs workspace
+# Mask $HOME with overlayfs workspace
 /bin/mount -t overlay overlay -o lowerdir=$ROOTFS$USR_HOME,upperdir=$OVERLAY_HOME,workdir=$OVERLAY_HOME_WORKDIR $ROOTFS$USR_HOME
 
 # Run container
