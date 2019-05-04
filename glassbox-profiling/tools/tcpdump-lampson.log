@@ -1,0 +1,26 @@
+reading from file tcpdump-lampson.pcap, link-type EN10MB (Ethernet)
+2019-05-04 18:27:13.563921 IP w4118.39078 > gateway.domain: 42778+ A? www.cs.columbia.edu. (37)
+2019-05-04 18:27:13.564063 IP w4118.39078 > gateway.domain: 57390+ AAAA? www.cs.columbia.edu. (37)
+2019-05-04 18:27:13.568979 IP gateway.domain > w4118.39078: 57390 1/1/0 CNAME webcluster.cs.columbia.edu. (116)
+2019-05-04 18:27:13.569006 IP gateway.domain > w4118.39078: 42778 2/0/0 CNAME webcluster.cs.columbia.edu., A 128.59.11.206 (78)
+2019-05-04 18:27:13.575477 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [S], seq 3549297218, win 29200, options [mss 1460,sackOK,TS val 3699158 ecr 0,nop,wscale 7], length 0
+2019-05-04 18:27:13.578321 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [S.], seq 1032370247, ack 3549297219, win 64240, options [mss 1460], length 0
+2019-05-04 18:27:13.578381 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [.], ack 1, win 29200, length 0
+2019-05-04 18:27:13.578649 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [P.], seq 1:141, ack 1, win 29200, length 140: HTTP: GET /~nieh/teaching/e6118/papers/1_22_lampson_hints-design.pdf HTTP/1.1
+2019-05-04 18:27:13.578856 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [.], ack 141, win 64240, length 0
+2019-05-04 18:27:13.623871 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [P.], seq 1:5497, ack 141, win 64240, length 5496: HTTP: HTTP/1.1 200 OK
+2019-05-04 18:27:13.623953 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [.], ack 5497, win 39420, length 0
+2019-05-04 18:27:13.626243 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [P.], seq 5497:15115, ack 141, win 64240, length 9618: HTTP
+2019-05-04 18:27:13.626345 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [.], ack 15115, win 58400, length 0
+2019-05-04 18:27:13.626514 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [P.], seq 15115:17863, ack 141, win 64240, length 2748: HTTP
+2019-05-04 18:27:13.626535 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [.], ack 17863, win 64240, length 0
+2019-05-04 18:27:13.627005 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [P.], seq 17863:19237, ack 141, win 64240, length 1374: HTTP
+2019-05-04 18:27:13.627023 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [.], ack 19237, win 64240, length 0
+2019-05-04 18:27:13.628225 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [P.], seq 19237:26107, ack 141, win 64240, length 6870: HTTP
+2019-05-04 18:27:13.628254 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [.], ack 26107, win 64240, length 0
+2019-05-04 18:27:13.629098 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [P.], seq 26107:32977, ack 141, win 64240, length 6870: HTTP
+2019-05-04 18:27:13.629117 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [.], ack 32977, win 64240, length 0
+2019-05-04 18:27:13.629251 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [P.], seq 32977:34351, ack 141, win 64240, length 1374: HTTP
+2019-05-04 18:27:13.629269 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [.], ack 34351, win 64240, length 0
+2019-05-04 18:27:13.632915 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [P.], seq 34351:49465, ack 141, win 64240, length 15114: HTTP
+2019-05-04 18:27:13.632945 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [.], ack 49465, win 64240, length 0

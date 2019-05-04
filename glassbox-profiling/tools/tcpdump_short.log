@@ -1,0 +1,10 @@
+reading from file short-tcpdump.pcap, link-type EN10MB (Ethernet)
+2019-05-04 18:21:31.365240 IP w4118.58187 > gateway.domain: 52783+ A? www.cs.columbia.edu. (37)
+2019-05-04 18:21:31.365364 IP w4118.58187 > gateway.domain: 25433+ AAAA? www.cs.columbia.edu. (37)
+2019-05-04 18:21:31.371635 IP gateway.domain > w4118.58187: 52783 2/0/0 CNAME webcluster.cs.columbia.edu., A 128.59.11.206 (78)
+2019-05-04 18:21:31.371673 IP gateway.domain > w4118.58187: 25433 1/1/0 CNAME webcluster.cs.columbia.edu. (116)
+2019-05-04 18:21:31.378025 IP w4118.44784 > webcluster.cs.columbia.edu.http: Flags [S], seq 457409146, win 29200, options [mss 1460,sackOK,TS val 3613608 ecr 0,nop,wscale 7], length 0
+2019-05-04 18:21:31.383180 IP webcluster.cs.columbia.edu.http > w4118.44784: Flags [S.], seq 2371712900, ack 457409147, win 64240, options [mss 1460], length 0
+2019-05-04 18:21:31.383256 IP w4118.44784 > webcluster.cs.columbia.edu.http: Flags [.], ack 1, win 29200, length 0
+2019-05-04 18:21:31.383440 IP w4118.44784 > webcluster.cs.columbia.edu.http: Flags [P.], seq 1:114, ack 1, win 29200, length 113: HTTP: GET /~nieh/teaching/e6118/projects/ HTTP/1.1
+

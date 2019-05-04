@@ -1,0 +1,10 @@
+reading from file short-tcpdump2.pcap, link-type EN10MB (Ethernet)
+2019-05-04 18:21:31.365250 IP 172.16.47.170.58187 > 172.16.47.2.domain: 52783+ A? www.cs.columbia.edu. (37)
+2019-05-04 18:21:31.365367 IP 172.16.47.170.58187 > 172.16.47.2.domain: 25433+ AAAA? www.cs.columbia.edu. (37)
+2019-05-04 18:21:31.371692 IP 172.16.47.2.domain > 172.16.47.170.58187: 52783 2/0/0 CNAME webcluster.cs.columbia.edu., A 128.59.11.206 (78)
+2019-05-04 18:21:31.371704 IP 172.16.47.2.domain > 172.16.47.170.58187: 25433 1/1/0 CNAME webcluster.cs.columbia.edu. (116)
+2019-05-04 18:21:31.378040 IP 172.16.47.170.44784 > 128.59.11.206.http: Flags [S], seq 457409146, win 29200, options [mss 1460,sackOK,TS val 3613608 ecr 0,nop,wscale 7], length 0
+2019-05-04 18:21:31.383454 IP 128.59.11.206.http > 172.16.47.170.44784: Flags [S.], seq 2371712900, ack 457409147, win 64240, options [mss 1460], length 0
+2019-05-04 18:21:31.383454 IP 172.16.47.170.44784 > 128.59.11.206.http: Flags [P.], seq 1:114, ack 1, win 29200, length 113: HTTP: GET /~nieh/teaching/e6118/projects/ HTTP/1.1
+2019-05-04 18:21:31.383469 IP 172.16.47.170.44784 > 128.59.11.206.http: Flags [.], ack 1, win 29200, length 0
+
