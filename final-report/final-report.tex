@@ -1,11 +1,26 @@
 \documentclass{proc}
 \usepackage{url}
 \def\UrlBreaks{\do\/\do-}
-\usepackage{graphicx}
+\usepackage{graphicx, subcaption}
 \usepackage{epstopdf}
 \usepackage{eso-pic}
 \usepackage{picture}
+\usepackage{listings}
+\usepackage{tabu}
 \linespread{1.2}
+\definecolor{grey}{rgb}{0.96, 0.96, 0.96}
+\lstset { 
+  backgroundcolor=\color{grey},
+  linewidth=160mm,
+  basicstyle=\footnotesize\ttfamily, % Global Code Style
+  columns=fixed, % make all characters equal width
+  showstringspaces=false, % lets spaces in strings appear as real spaces
+  breaklines=true, % wrap lines if they don't fit
+  rulecolor=\color{grey},
+  moredelim=**[is][\color{blue}]{@}{@},
+}
+
+
 
 \begin{document}
 
@@ -116,10 +131,69 @@ GlassBox uses this X11 behavior to emulate an X server running inside the contai
 The X11 protocol also defines a way for a client to authenticate to a remote server using a \texttt{.Xauthority} file \cite{xsecurityman}, traditionally stored in a user's home directory. Without information stored in this file, an application inside the container cannot authenticate with the display server. GlassBox extracts the cookie stored inside the user's \texttt{.Xauthority} file that corresponds to the X server listed in \texttt{DISPLAY} and stores it in a \texttt{.Xauthority} file in the container's home directory. We use \texttt{overlayfs} to overlay this file over the home directory inside the container and avoid causing persistent modifications to the underlying filesystem data.
 
 \section*{4. Evaluation}
-
 We evaluated GlassBox on a range of host-monitoring and application performance monitoring tools. This includes Linux commands like \texttt{top} or \texttt{free}, more complex utilities like \texttt{sysstat} \cite{sysstat}, and graphical tools like \textit{Wireshark}. We have yet to try remote monitoring tools like \textit{GKrellM} \cite{gkrellm}, and other graphical tools such as \textit{Cacti} \cite{cacti} and \textit{Nagios} \cite{nagios}. We also ensured that standard Unix tools (e.g. \texttt{awk}, \texttt{grep}, \texttt{vim}, \texttt{md5sum}) work correctly.
 
-We will also evaluate malicious or buggy software, to show that our host is isolated/protected from misbehaving programs.
+We ran each monitoring tool inside a GlassBox instance running on a virtualized Linux v4.9.0 environment. The host OS was macOS 10.4 and the hypervisor was VMware Fusion Professional Version 8.5.10. Figure 3 shows the tools on which we evaluated GlassBox, and any discrepancies between host and GlassBox outputs. The discrepancies are described and explained in the following subsections. 
+ \begin{figure}[h]
+\begin{tabular}{ |p{35mm}|p{15mm}|p{20mm}| }
+\hline
+\textbf{Monitoring tool} &  \textbf{Resource} & \textbf{Differences}\\\hline
+df (GNU coreutils) 8.26  & disk  &  due to\newline mounts\\\hline
+du (GNU coreutils) 8.26  &  disk  &  due to\newline mounts\\\hline
+ip (iproute2-ss161212) &  network & due to\newline network\newline namespace\\\hline
+tcpdump 4.9.2&  network & minor\\\hline
+free\newline from procps-ng 3.3.12 &  memory & none \\\hline
+ps\newline from procps-ng 3.3.12 & process & minor\\\hline
+
+pidstat \newline sysstat version 11.4.3 & process & \\\hline
+sar \newline sysstat version 11.4.3 &  system activity & none\\\hline
+gkrellm 2.3.10 & cpu, disk, \newline proc, net interfaces  & only net\newline interfaces \\\hline
+Wireshark 2.6.7 & network & minor \\\hline
+\end{tabular}
+ \caption{Evaluation of monitoring tools running in GlassBox}
+\end{figure}
+\subsection*{4.1 \texttt{df} command}
+The \texttt{df} command calls the \texttt{statfs()} system call to get statistics for a mounted filesystem, and unsurprisingly, shows different filesystems and mount points inside and outside the container. Due to the bind-mounting, the host root is shown as filesystem `\texttt{/}' mounted on `\texttt{/}' in GlassBox, while it is shown as filesystem `\texttt{/dev/sda}' mounted on `\texttt{/}' outside GlassBox. The bytes used and bytes available of the host root are consistent. 
+\subsection*{4.2 \texttt{ps} command}
+Figure 3 shows the output from running `\texttt{ps -a}' inside and outside the container. The container displays \texttt{?} for the TTY since there are no terminals or pseudo-terminals attached to processes outside of the container. Also, processes in the container cannot be seen by the host's \texttt{ps} output.
+ \begin{figure}[h]
+\begin{lstlisting}[linewidth=\linewidth]
+  PID TTY          TIME CMD
+  963 tty1     00:00:00 gnome-session-b
+  986 tty1     00:00:12 gnome-shell
+ 1123 tty1     00:00:00 Xwayland
+ 1187 tty1     00:00:00 gnome-settings-
+ 1622 pts/1    00:00:00 start.sh
+ 1764 pts/1    00:00:00 sudo
+ 1765 pts/1    00:00:00 unshare
+ 1766 pts/1    00:00:00 launch_containe
+ 1838 pts/1    00:00:00 sudo
+ 1843 pts/1    00:00:00 socat
+ 1863 pts/1    00:00:00 runc
+ 2993 pts/0    00:00:00 ps
+ \end{lstlisting}
+\hspace{7.5em} a) outside Glassbox
+ \begin{lstlisting}[linewidth=\linewidth]
+  PID TTY          TIME CMD
+  963 ?        00:00:00 gnome-session-b
+  986 ?        00:00:12 gnome-shell
+ 1123 ?        00:00:00 Xwayland
+ 1187 ?        00:00:00 gnome-settings-
+ 1622 ?        00:00:00 start.sh
+ 1764 ?        00:00:00 sudo
+ 1765 ?        00:00:00 unshare
+ 1766 ?        00:00:00 launch_containe
+ 1838 ?        00:00:00 sudo
+ 1843 ?        00:00:00 socat
+ 1863 ?        00:00:00 runc
+ 2994 pts/0    00:00:00 ps
+\end{lstlisting}
+\hspace{7.5em} b) inside Glassbox
+ \caption{ps output}
+\end{figure}
+
+\subsection*{4.3 \texttt{tcpdump} and Wireshark}
+We ran tcpdump inside and outside a GlassBox instance to produce packet captures. There is a delay on the order of microseconds in packet timestamps in the capture inside GlassBox. Since the DNS resolver does not work in GlassBox, the packet capture shows ip addresses rather than domain names.
 
 \section*{5. GlassBox Performance}
 
@@ -134,7 +208,7 @@ We will also measure startup and execution overhead of GlassBox, using a runC co
 With GlassBox, monitoring tools are able to run successfully and access host information in our container, with a high guarantee of fault tolerance. The implementation of GlassBox incurs some memory overhead, as shown by our profiling results. Even with these initial results, we expect that there is much future work that can be done to improve GlassBox and build new fault tolerant host monitoring systems.
 
 \bibliographystyle{abbrv}
-\bibliography{extended-abstract}
+\bibliography{final-report}
 
 \clearpage
 
