@@ -1,0 +1,55 @@
+df
+version:
+df (GNU coreutils) 8.26
+Copyright (C) 2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Torbjorn Granlund, David MacKenzie, and Paul Eggert.
+
+du
+version:
+du (GNU coreutils) 8.26
+Copyright (C) 2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Torbjorn Granlund, David MacKenzie, Paul Eggert,
+and Jim Meyering.
+
+ip addr
+version: ip utility, iproute2-ss161212
+
+tcpdump
+version:
+tcpdump version 4.9.2
+libpcap version 1.8.1
+OpenSSL 1.0.2r  26 Feb 2019
+
+curl http://www.cs.columbia.edu/~nieh/teaching/e6118/papers/1_22_lampson_hints-design.pdf -o lampson.pdf
+tcpdump -c 100 -w lampson.pcap
+tcpdump -tttt -r lampson.pcap
+
+ps
+version: ps from procps-ng 3.3.12
+ps -ajfwx
+
+free
+version: free from procps-ng 3.3.12
+
+sysstat
+sysstat version 11.4.3
+(C) Sebastien Godard (sysstat <at> orange.fr
+mpstat
+
+
+pidstat -rh 2 3
+
+
+sar -u -o sarfile 2 5
+
+
+gkrellm 
+verison: gkrellm 2.3.10
