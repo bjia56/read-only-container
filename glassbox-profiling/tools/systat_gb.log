@@ -1,0 +1,5 @@
+w4118@w4118:~$ mpstat
+Linux 4.9.0-7-amd64 (w4118) 05/03/19 _x86_64_(2 CPU)
+
+21:35:16     CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+21:35:16     all   11.83    0.01   54.40    0.09    0.00    0.03    0.00    0.00    0.00   33.65

@@ -1,0 +1,13 @@
+MySQL on localhost (10.1.38)                                                      up 0+01:45:16 [21:49:00]
+ Queries: 3.6k     qps:    1 Slow:     0.0         Se/In/Up/De(%):    128/06/02/01
+ Sorts:      0 qps now:    1 Slow qps: 0.0  Threads:    1 (   1/   1) 00/00/00/00
+ Cache Hits: 1.6k  Hits/s:  0.3 Hits now:   0.0  Ratio: 35.1%
+ Ratio now:  0.0% 
+ Handler: (R/W/U/D)     0/    0/    0/    0        Tmp: R/W/U:    93/   93/    0
+ ISAM Key Efficiency: 99.5%  Bps in/out: 105.8/121.3   Now in/out:  20.4/ 3.1k
+
+       Id     User         Host/IP        DB   Time     %    Cmd           State Query
+       --     ----         -------        --   ----     -    ---           ----- ----------
+       47     root       localhost                0   0.0  Query            init show full processlist                                                      
+
+

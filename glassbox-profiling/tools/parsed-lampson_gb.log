@@ -1,0 +1,101 @@
+reading from file lampson_gb.pcap, link-type EN10MB (Ethernet)
+2019-05-03 21:07:35.532145 IP 172.16.47.168.ssh > 172.16.47.1.63104: Flags [P.], seq 929453314:929453438, ack 218982047, win 313, options [nop,nop,TS val 884632 ecr 238825169], length 124
+2019-05-03 21:07:35.532343 IP 172.16.47.1.63104 > 172.16.47.168.ssh: Flags [.], ack 124, win 2046, options [nop,nop,TS val 238825516 ecr 884632], length 0
+2019-05-03 21:07:36.364558 IP 172.16.47.1.63101 > 172.16.47.168.ssh: Flags [P.], seq 934359636:934359672, ack 3541416852, win 2048, options [nop,nop,TS val 238826345 ecr 864435], length 36
+2019-05-03 21:07:36.365030 IP 172.16.47.168.ssh > 172.16.47.1.63101: Flags [P.], seq 1:37, ack 36, win 389, options [nop,nop,TS val 884840 ecr 238826345], length 36
+2019-05-03 21:07:36.365204 IP 172.16.47.1.63101 > 172.16.47.168.ssh: Flags [.], ack 37, win 2047, options [nop,nop,TS val 238826345 ecr 884840], length 0
+2019-05-03 21:07:37.300869 IP 172.16.47.168.ssh > 172.16.47.1.63101: Flags [P.], seq 37:161, ack 36, win 389, options [nop,nop,TS val 885074 ecr 238826345], length 124
+2019-05-03 21:07:37.301092 IP 172.16.47.1.63101 > 172.16.47.168.ssh: Flags [.], ack 161, win 2046, options [nop,nop,TS val 238827279 ecr 885074], length 0
+2019-05-03 21:07:38.949634 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [P.], seq 3671073296:3671073332, ack 1159638271, win 2048, options [nop,nop,TS val 238828919 ecr 883860], length 36
+2019-05-03 21:07:38.950104 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1:37, ack 36, win 1452, options [nop,nop,TS val 885486 ecr 238828919], length 36
+2019-05-03 21:07:38.950336 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 37, win 2047, options [nop,nop,TS val 238828919 ecr 885486], length 0
+2019-05-03 21:07:39.027219 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 37:73, ack 36, win 1452, options [nop,nop,TS val 885505 ecr 238828919], length 36
+2019-05-03 21:07:39.027435 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 73, win 2047, options [nop,nop,TS val 238828996 ecr 885505], length 0
+2019-05-03 21:07:39.027436 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 73:145, ack 36, win 1452, options [nop,nop,TS val 885505 ecr 238828919], length 72
+2019-05-03 21:07:39.027585 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 145:181, ack 36, win 1452, options [nop,nop,TS val 885505 ecr 238828996], length 36
+2019-05-03 21:07:39.027587 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 145, win 2046, options [nop,nop,TS val 238828996 ecr 885505], length 0
+2019-05-03 21:07:39.027742 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 181:217, ack 36, win 1452, options [nop,nop,TS val 885505 ecr 238828996], length 36
+2019-05-03 21:07:39.027743 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 181, win 2047, options [nop,nop,TS val 238828996 ecr 885505], length 0
+2019-05-03 21:07:39.027916 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 217:253, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828996], length 36
+2019-05-03 21:07:39.028075 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 217, win 2047, options [nop,nop,TS val 238828996 ecr 885505], length 0
+2019-05-03 21:07:39.028079 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 253, win 2047, options [nop,nop,TS val 238828996 ecr 885506], length 0
+2019-05-03 21:07:39.028088 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 253:289, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828996], length 36
+2019-05-03 21:07:39.028261 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 289:361, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828996], length 72
+2019-05-03 21:07:39.028271 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 289, win 2047, options [nop,nop,TS val 238828996 ecr 885506], length 0
+2019-05-03 21:07:39.028401 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 361:397, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828996], length 36
+2019-05-03 21:07:39.028556 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 361, win 2046, options [nop,nop,TS val 238828997 ecr 885506], length 0
+2019-05-03 21:07:39.028559 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 397:433, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828997], length 36
+2019-05-03 21:07:39.028560 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 397, win 2047, options [nop,nop,TS val 238828997 ecr 885506], length 0
+2019-05-03 21:07:39.028712 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 433:469, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828997], length 36
+2019-05-03 21:07:39.028922 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 469:505, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828997], length 36
+2019-05-03 21:07:39.028934 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 433, win 2047, options [nop,nop,TS val 238828997 ecr 885506], length 0
+2019-05-03 21:07:39.028938 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 469, win 2047, options [nop,nop,TS val 238828997 ecr 885506], length 0
+2019-05-03 21:07:39.029098 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 505:577, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828997], length 72
+2019-05-03 21:07:39.029231 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 505, win 2047, options [nop,nop,TS val 238828997 ecr 885506], length 0
+2019-05-03 21:07:39.029258 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 577, win 2046, options [nop,nop,TS val 238828997 ecr 885506], length 0
+2019-05-03 21:07:39.029263 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 577:649, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828997], length 72
+2019-05-03 21:07:39.029424 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 649:685, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828998], length 36
+2019-05-03 21:07:39.029429 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 649, win 2046, options [nop,nop,TS val 238828998 ecr 885506], length 0
+2019-05-03 21:07:39.034182 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 685, win 2047, options [nop,nop,TS val 238828998 ecr 885506], length 0
+2019-05-03 21:07:39.034190 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 685:721, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828998], length 36
+2019-05-03 21:07:39.034195 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 721, win 2047, options [nop,nop,TS val 238828998 ecr 885506], length 0
+2019-05-03 21:07:39.034199 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 721:757, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828998], length 36
+2019-05-03 21:07:39.034202 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 757, win 2047, options [nop,nop,TS val 238828998 ecr 885506], length 0
+2019-05-03 21:07:39.034206 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 757:793, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828998], length 36
+2019-05-03 21:07:39.034210 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 793, win 2047, options [nop,nop,TS val 238828998 ecr 885506], length 0
+2019-05-03 21:07:39.034215 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 793:829, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828998], length 36
+2019-05-03 21:07:39.034219 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 829, win 2047, options [nop,nop,TS val 238828998 ecr 885506], length 0
+2019-05-03 21:07:39.034222 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 829:865, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828998], length 36
+2019-05-03 21:07:39.034225 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 865, win 2047, options [nop,nop,TS val 238828998 ecr 885506], length 0
+2019-05-03 21:07:39.034229 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 865:901, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828998], length 36
+2019-05-03 21:07:39.034233 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 901, win 2047, options [nop,nop,TS val 238828998 ecr 885506], length 0
+2019-05-03 21:07:39.034237 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 901:937, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828998], length 36
+2019-05-03 21:07:39.034241 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 937, win 2047, options [nop,nop,TS val 238828999 ecr 885506], length 0
+2019-05-03 21:07:39.034245 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 937:973, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828999], length 36
+2019-05-03 21:07:39.034249 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 973, win 2047, options [nop,nop,TS val 238828999 ecr 885506], length 0
+2019-05-03 21:07:39.034252 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 973:1009, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828999], length 36
+2019-05-03 21:07:39.034256 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1009, win 2047, options [nop,nop,TS val 238828999 ecr 885506], length 0
+2019-05-03 21:07:39.034260 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1009:1045, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828999], length 36
+2019-05-03 21:07:39.034263 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1045, win 2047, options [nop,nop,TS val 238828999 ecr 885506], length 0
+2019-05-03 21:07:39.034266 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1045:1081, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828999], length 36
+2019-05-03 21:07:39.034269 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1081, win 2047, options [nop,nop,TS val 238828999 ecr 885506], length 0
+2019-05-03 21:07:39.034273 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1081:1117, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828999], length 36
+2019-05-03 21:07:39.034276 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1117, win 2047, options [nop,nop,TS val 238828999 ecr 885506], length 0
+2019-05-03 21:07:39.034279 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1117:1153, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828999], length 36
+2019-05-03 21:07:39.034282 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1153, win 2047, options [nop,nop,TS val 238828999 ecr 885506], length 0
+2019-05-03 21:07:39.034285 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1153:1189, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238828999], length 36
+2019-05-03 21:07:39.034289 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1189, win 2047, options [nop,nop,TS val 238829000 ecr 885506], length 0
+2019-05-03 21:07:39.034292 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1189:1225, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238829000], length 36
+2019-05-03 21:07:39.034296 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1225, win 2047, options [nop,nop,TS val 238829000 ecr 885506], length 0
+2019-05-03 21:07:39.034299 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1225:1261, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238829000], length 36
+2019-05-03 21:07:39.034329 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1261, win 2047, options [nop,nop,TS val 238829000 ecr 885506], length 0
+2019-05-03 21:07:39.034333 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1261:1297, ack 36, win 1452, options [nop,nop,TS val 885506 ecr 238829000], length 36
+2019-05-03 21:07:39.034337 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1297, win 2047, options [nop,nop,TS val 238829000 ecr 885506], length 0
+2019-05-03 21:07:39.034340 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1297:1333, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829000], length 36
+2019-05-03 21:07:39.034344 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1333, win 2047, options [nop,nop,TS val 238829000 ecr 885507], length 0
+2019-05-03 21:07:39.034347 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1333:1369, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829000], length 36
+2019-05-03 21:07:39.034350 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1369, win 2047, options [nop,nop,TS val 238829000 ecr 885507], length 0
+2019-05-03 21:07:39.034354 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1369:1405, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829000], length 36
+2019-05-03 21:07:39.034357 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1405, win 2047, options [nop,nop,TS val 238829000 ecr 885507], length 0
+2019-05-03 21:07:39.034361 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1405:1441, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829000], length 36
+2019-05-03 21:07:39.034364 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1441, win 2047, options [nop,nop,TS val 238829000 ecr 885507], length 0
+2019-05-03 21:07:39.034370 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1441:1477, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829000], length 36
+2019-05-03 21:07:39.034374 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1477, win 2047, options [nop,nop,TS val 238829001 ecr 885507], length 0
+2019-05-03 21:07:39.034377 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1477:1513, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829001], length 36
+2019-05-03 21:07:39.034381 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1513, win 2047, options [nop,nop,TS val 238829001 ecr 885507], length 0
+2019-05-03 21:07:39.034384 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1513:1549, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829001], length 36
+2019-05-03 21:07:39.034387 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1945:2013, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829002], length 68
+2019-05-03 21:07:39.034388 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1549, win 2047, options [nop,nop,TS val 238829001 ecr 885507], length 0
+2019-05-03 21:07:39.034392 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1549:1585, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829001], length 36
+2019-05-03 21:07:39.034395 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1585, win 2047, options [nop,nop,TS val 238829001 ecr 885507], length 0
+2019-05-03 21:07:39.034399 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1585:1621, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829001], length 36
+2019-05-03 21:07:39.034420 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1621, win 2047, options [nop,nop,TS val 238829001 ecr 885507], length 0
+2019-05-03 21:07:39.034424 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1621:1657, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829001], length 36
+2019-05-03 21:07:39.034427 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1657, win 2047, options [nop,nop,TS val 238829001 ecr 885507], length 0
+2019-05-03 21:07:39.034441 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1657:1693, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829001], length 36
+2019-05-03 21:07:39.034447 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1693, win 2047, options [nop,nop,TS val 238829001 ecr 885507], length 0
+2019-05-03 21:07:39.034451 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1693:1729, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829001], length 36
+2019-05-03 21:07:39.034454 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1729, win 2047, options [nop,nop,TS val 238829001 ecr 885507], length 0
+2019-05-03 21:07:39.034457 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1729:1765, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829001], length 36
+2019-05-03 21:07:39.034461 IP 172.16.47.1.63210 > 172.16.47.168.ssh: Flags [.], ack 1765, win 2047, options [nop,nop,TS val 238829001 ecr 885507], length 0
+2019-05-03 21:07:39.034533 IP 172.16.47.168.ssh > 172.16.47.1.63210: Flags [P.], seq 1765:1801, ack 36, win 1452, options [nop,nop,TS val 885507 ecr 238829001], length 36

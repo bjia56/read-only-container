@@ -1,0 +1,8 @@
+Filesystem     1K-blocks     Used Available Use% Mounted on
+/               47215380 40459884   4327388  91% /
+overlay             4096       52      4044   2% /home/w4118
+tmpfs              65536        0     65536   0% /dev
+shm                65536        0     65536   0% /dev/shm
+tmpfs               4096       52      4044   2% /tmp/.X11-unix
+tmpfs            2662364        0   2662364   0% /sys/fs/cgroup
+tmpfs            2662364        0   2662364   0% /sys/firmware

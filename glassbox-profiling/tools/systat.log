@@ -1,0 +1,4 @@
+Linux 4.9.0-7-amd64 (w4118) 05/03/2019 _x86_64_(2 CPU)
+
+09:35:21 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+09:35:21 PM  all   11.84    0.01   54.42    0.09    0.00    0.03    0.00    0.00    0.00   33.61

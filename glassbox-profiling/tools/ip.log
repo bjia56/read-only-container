@@ -1,0 +1,42 @@
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:3f:8e:b8 brd ff:ff:ff:ff:ff:ff
+    inet 172.16.47.168/24 brd 172.16.47.255 scope global dynamic ens33
+       valid_lft 1204sec preferred_lft 1204sec
+    inet6 fe80::20c:29ff:fe3f:8eb8/64 scope link 
+       valid_lft forever preferred_lft forever
+3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default 
+    link/ether 02:42:bd:a9:39:67 brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+       valid_lft forever preferred_lft forever
+4: runc0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    link/ether 8e:47:f8:93:14:56 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.10.1/24 scope global runc0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::305e:b9ff:fe54:f0f1/64 scope link 
+       valid_lft forever preferred_lft forever
+7: veth-guest116dc@veth-host116dc: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 6e:07:b7:e8:24:b7 brd ff:ff:ff:ff:ff:ff
+8: veth-host116dc@veth-guest116dc: <NO-CARRIER,BROADCAST,MULTICAST,UP,M-DOWN> mtu 1500 qdisc noqueue master docker0 state LOWERLAYERDOWN group default qlen 1000
+    link/ether 7e:44:49:bc:65:56 brd ff:ff:ff:ff:ff:ff
+10: veth-host159@if9: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master runc0 state UP group default qlen 1000
+    link/ether 8e:47:f8:93:14:56 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet6 fe80::8c47:f8ff:fe93:1456/64 scope link 
+       valid_lft forever preferred_lft forever
+11: veth-guest159dc@veth-host159dc: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether b2:af:8c:c9:f6:91 brd ff:ff:ff:ff:ff:ff
+12: veth-host159dc@veth-guest159dc: <NO-CARRIER,BROADCAST,MULTICAST,UP,M-DOWN> mtu 1500 qdisc noqueue master docker0 state LOWERLAYERDOWN group default qlen 1000
+    link/ether fa:5d:8a:d2:45:99 brd ff:ff:ff:ff:ff:ff
+14: veth-host124@if13: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master runc0 state UP group default qlen 1000
+    link/ether 9a:f6:cc:56:91:a3 brd ff:ff:ff:ff:ff:ff link-netnsid 1
+    inet6 fe80::98f6:ccff:fe56:91a3/64 scope link 
+       valid_lft forever preferred_lft forever
+15: veth-guest124dc@veth-host124dc: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 76:e2:03:35:f5:fc brd ff:ff:ff:ff:ff:ff
+16: veth-host124dc@veth-guest124dc: <NO-CARRIER,BROADCAST,MULTICAST,UP,M-DOWN> mtu 1500 qdisc noqueue master docker0 state LOWERLAYERDOWN group default qlen 1000
+    link/ether e6:f9:99:98:3c:75 brd ff:ff:ff:ff:ff:ff

@@ -1,0 +1,17 @@
+root@w4118:~# mytop
+Unknown option: default-character-set
+Cannot connect to MariaDB server. Please check the:
+
+  * database you specified "" (default is "")
+  * username you specified "root" (default is "root")
+  * password you specified "" (default is "")
+  * hostname you specified "localhost" (default is "localhost")
+  * port you specified "3306" (default is 3306)
+  * socket you specified "" (default is "")
+
+The options my be specified on the command-line or in a ~/.mytop or
+~/.my.cnf config file. See the manual (perldoc mytop) for details.
+
+Here's the exact error from DBI. It might help you debug:
+
+Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (111 "Connection refused")
