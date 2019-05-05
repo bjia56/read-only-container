@@ -46,7 +46,7 @@ Instead of fault tolerance through hardware virtualization by way of virtual mac
 
 Modern containers combine these operating system virtualization approaches to create lightweight isolated execution contexts. The industry standard choice for Linux container technology is Docker, which combines Linux \textit{cgroups}, \textit{namespaces}, \textit{capabilities}, and more using its custom container runtime, \textit{libcontainer} \cite{hykes2014libcontainer}. With the formation of the Open Container Initiative (OCI) in 2015 \cite{opencontainerinitiative}, the design and construction of container platforms became standardized with OCI's \textit{runtime-spec} and \textit{image-spec}, providing a framework for distributors to develop their own cross-compatible container implementations.
 
-In our research, we present \textit{GlassBox}, a container-based system to provide fault-tolerance and fault-containment semantics to host monitoring processes on commodity Linux operating systems. \textit{GlassBox} addresses the problems of host stability and fault tolerance that arise from executing buggy or compromised system tools and from user negligence and error when performing system administration tasks and application log monitoring through the use of modern container technologies. In the following sections, we first present background on containers and existing container technologies, then discuss a theoretical view of the host resources a fault-tolerant host monitoring system should allow access to and the resources the system should protect, then discuss the prototype architecture and implementation of \textit{GlassBox}, and close with a discussion of functionality and future work.
+In our research, we present \textit{GlassBox}, a container-based system to provide fault-tolerance and fault-containment semantics to host monitoring processes on commodity Linux operating systems. \textit{GlassBox} addresses the problems of host stability and fault tolerance that arise from executing buggy or compromised system tools and from user negligence and error when performing system administration tasks and application log monitoring through the use of modern container technologies. In the following sections, we first present background on containers and existing container technologies, then discuss a theoretical view of the host resources a fault-tolerant host monitoring system should allow access to and the resources the system should protect, then discuss the Linux tools we profiled and the resources required for each to function correctly, then discuss the prototype architecture and implementation of \textit{GlassBox}, and close with a discussion of functionality and future work.
 
 \section*{2. Containers}
 
@@ -74,7 +74,26 @@ On the other hand, a strong guarantee that the monitoring system's execution mai
 
 Traditionally, there is tension between these two requirements of accurate host monitoring and fault-tolerance. This tension can be easily exemplified by the tool \texttt{lsof}, which displays information about all of the host's open file descriptors by reading from the \texttt{/proc} filesystem. Running \texttt{lsof} with a non-superuser user can display some file descriptor information for processes running under the user, but is not permissioned to read information about processes running under other users. While executing \texttt{lsof} under a non-superuser user protects the host from harm if the \texttt{lsof} execution misbehaves or its binary has been compromised, it is clear that this protection is provided at the cost of losing access to certain information about the system. On the other hand, running \texttt{lsof} as a superuser would provide this information, but puts the host at significantly more risk if the \texttt{lsof} binary has been compromised.
 
-\section*{4. Requirements of Linux Tools}
+\section*{4. Host-Monitoring Linux Tools}
+
+ \begin{figure}[h]
+\begin{tabular}{ |p{40mm}|p{30mm}| }
+\hline
+\textbf{Monitoring tool} &  \textbf{Resource}\\\hline
+df (GNU coreutils)\newline 8.25-2ubuntu3{\raise.17ex\hbox{$\scriptstyle\sim$}}16.04  & disk\\\hline
+du (GNU coreutils)\newline 8.25-2ubuntu3{\raise.17ex\hbox{$\scriptstyle\sim$}}16.04  &  disk\\\hline
+ip (iproute2)\newline 4.3.0-1ubuntu3.16.04.4 &  network\\\hline
+tcpdump\newline 4.9.2-0ubuntu0.16.04.1 &  network\\\hline
+free (procps)\newline 2:3.3.10-4ubuntu2.4 &  memory\\\hline
+ps (procps)\newline 2:3.3.10-4ubuntu2.4  & process\\\hline
+pidstat (sysstat)\newline 11.2.0-1ubuntu0.2 & process\\\hline
+sar (sysstat)\newline 11.2.0-1ubuntu0.2 &  system activity\\\hline
+gkrellm\newline 2.3.6{\raise.17ex\hbox{$\scriptstyle\sim$}}rc1-1build1 & cpu, disk, process,\newline network interfaces\\\hline
+wireshark (wireshark-qt)\newline 2.6.6-1{\raise.17ex\hbox{$\scriptstyle\sim$}}ubuntu16.04.0 & network\\\hline
+vim\newline 2:7.4.1689-3ubuntu1.2 & text editor \\\hline
+\end{tabular}
+\caption{Profiled Linux tools}
+\end{figure}
 
  \begin{figure*}[t]
 \begin{lstlisting}[linewidth=\linewidth]
@@ -123,18 +142,22 @@ open("/proc/1932/status", O_RDONLY)     = 6
 open("/proc/1934/stat", O_RDONLY)       = 6
 open("/proc/1934/status", O_RDONLY)     = 6
  \end{lstlisting}
- \caption{truncated \texttt{strace ps | grep open} output}
+ \caption{Truncated \texttt{strace ps} output}
 \end{figure}
 
 GlassBox provides monitoring tools running inside the container with access to certain host information required by the specific monitoring tasks performed. To provide correct functionality of the tools, we first need to know what information each one expects from the host system.
 
-% Need to expand this section to discuss other tools (same tools listed in the results section)
-% need to discuss network tool strace
-We used the Linux utility \texttt{strace} to retrieve a syscall profile for various common system monitoring tools to determine what host resources these tools require. Sample output of \texttt{strace} (version 4.11-1ubuntu3) on the \texttt{ps} command (version 2:3.3.10-4ubuntu2.4), running on a virtualized Ubuntu 16.04.6 LTS (Linux 4.4.0-145-generic) on VirtualBox 5.2.26 r128414, can be found in Figure 1.
+We used the Linux utility \texttt{strace} to retrieve a syscall profile for various common system monitoring tools, listed in Figure 1, to determine what host resources these tools require. These tools were selected to be representative of common host monitoring workloads seeking information about a host's filsystem and disk usage, network state and traffic, memory usage, process status, and general system activity. A common text editor, \texttt{vim}, was also selected as a representative tool for opening and reading application log files. In our investigation, \texttt{strace} version 4.11-1ubuntu3 was used running on a virtualized Ubuntu 16.04.6 LTS (Linux 4.4.0-145-generic) on VirtualBox 5.2.26 r128414. Graphical tools (such as \texttt{wireshark}) used the VcXsrv X server, version 1.20.1.4. Sample output of \texttt{strace} on the \texttt{ps} command can be found in Figure 2.
 
-The output of \texttt{strace} informs us that the \texttt{ps} tool largely performs filesystem operations, since the majority of the system calls utilized are filesystem-related functions (such as \texttt{open}, \texttt{read}, and \texttt{stat}). Inspecting the actual system call arguments to the \texttt{open} function provides clarity to what files are being used. Figure 2 shows truncated output of \texttt{strace} with a filter on the \texttt{open} syscall name.
+The output of \texttt{strace} informs us that the \texttt{ps} tool largely performs filesystem operations, since the majority of the system calls utilized are filesystem-related functions (such as \texttt{open}, \texttt{read}, and \texttt{stat}). Inspecting the actual system call arguments to the \texttt{open} function provides clarity to what files are being used. Figure 3 shows truncated output of \texttt{strace} with a filter on the \texttt{open} syscall name. We discovered similar findings from the programs \texttt{df}, \texttt{free}, \texttt{pidstat}, \texttt{sar}, and \texttt{gkrellm}.
 
-From this information, we conclude that these representative monitoring tools take advantage of the \texttt{proc} filesystem, which provides information about processes and select kernel state, mounted at the \texttt{/proc} endpoint. In GlassBox, we can therefore leverage this information by providing view access to \texttt{/proc} for these tools to function correctly.
+Unlike the previous tools, the tool \texttt{du}'s \texttt{strace} profile used the system call \texttt{openat} instead of \texttt{open}, and appears to use \texttt{openat} to recursively traverse a directory tree. This is unsurprising, as the \texttt{du} man page suggests it calculates disk usage by recursing through directories \cite{duman}.
+
+The main difference in observed \texttt{strace} output is for the network tools: \texttt{ip}, \texttt{tcpdump}, and \texttt{wireshark}. We observe that these network tools all use the \texttt{socket} system call to communicate with the kernel and retrieve network information. The \texttt{ip} command opens a socket with the \texttt{PF\_NETLINK} domain, which opens a netlink connection to read the kernel's routing tables \cite{rtnetlinkman}. \texttt{tcpdump} opens a socket with the \texttt{PF\_PACKET} domain, which allows all incoming packets to be accessed by \texttt{tcpdump} before being processed by the kernel \cite{packetman}. \texttt{wireshark}'s \texttt{strace} profile is more difficult to analyze than the other command line tools, as its graphical X11 functionality produces many filesystem operations to load components of its interface and many socket operations to send X11 paint commands to the X server. We discovered that \texttt{wireshark} calls the \texttt{dumpcap} program, which ultimately functions similarly as \texttt{tcpdump} by opening a \texttt{PF\_PACKET} socket.
+
+Finally, the \texttt{strace} profile for \texttt{vim}, when opening a plain text file, indicates that the text editor reads plugin files (denoted by the \texttt{.vim} extension) and produces temporary files (denoted by the \texttt{.swp} extension). When running \texttt{vim} on a read-only filesystem, we also notice that \texttt{vim} no longer produces the \texttt{.swp} temporary file.
+
+We conclude from testing our representative monitoring tools that tools seeking information about the filesystem, memory usage, and system activity can take advantage of the \texttt{proc} filesystem mounted at the \texttt{/proc} endpoint. Some disk usage tools simply sum up the sizes of files stored on the filesystem. Networking tools mainly rely on the \texttt{socket} system call to probe the kernel for network state and traffic. In GlassBox, we can therefore leverage these observations by providing view access to the filesystem and sockets for these tools to function correctly.
 
 \section*{5. GlassBox Implementation}
 
@@ -163,7 +186,7 @@ Process isolation is critical to GlassBox to provide necessary fault-containment
 
 Host monitoring processes inside GlassBox require access to the host's full filesystem to read from the \texttt{/proc} and \texttt{/sys} directories. We implement this through the use of the \texttt{bindfs} filesystem (built on FUSE) \cite{bindfs}, which presents a read-only userspace view of the host's full filesystem tree similar to a standard bind mount. By bind-mounting the host's root to the container root, we make the host root filesystem available inside the container, while by making the mount read-only, we prevent the container from modifying any of the host's files. Given access to the root file system, many tools like \texttt{top} can successfully collect statistics on the host, even when running inside GlassBox.
 
-Host-monitoring tools may write temporary log files to the filesystem. GlassBox configures an ephemeral mount point at the \texttt{/tmp} directory (a location commonly used by applications to store temporary data) via \texttt{tmpfs}, and uses \texttt{overlayfs} to overlay a second \texttt{tmpfs} over the user's home directory (commonly used by applications to store personalized configuration data). This ensures that applications that must write to disk can continue to function correctly, while the writes to the filesystem are ephemeral. Figure 4 shows the setup. The \texttt{overlay\_home} directory is the writeable upper directory, \texttt{overlay\_work} is the work directory used for preparing files between atomic actions. We create an overlay of \texttt{overlay\_home} on top of the bind-mounted root filesystem, to present a unified view of the upper directory (which is writeable) and the underlying root directory tree (which is read-only).
+Host-monitoring tools may write temporary log files to the filesystem. GlassBox configures an ephemeral mount point at the \texttt{/tmp} directory (a location commonly used by applications to store temporary data) via \texttt{tmpfs}, and uses \texttt{overlayfs} to overlay a second \texttt{tmpfs} over the user's home directory (commonly used by applications to store personalized configuration data). This ensures that applications that must write to disk can continue to function correctly, while the writes to the filesystem are ephemeral. Figure 5 shows the setup. The \texttt{overlay\_home} directory is the writeable upper directory, \texttt{overlay\_work} is the work directory used for preparing files between atomic actions. We create an overlay of \texttt{overlay\_home} on top of the bind-mounted root filesystem, to present a unified view of the upper directory (which is writeable) and the underlying root directory tree (which is read-only).
 
 % can go on to discuss reading log files for applications that want to monitor other processes
 
@@ -195,7 +218,7 @@ The X11 protocol also defines a way for a client to authenticate to a remote ser
 \section*{6. Evaluation}
 We evaluated GlassBox on a range of host-monitoring and application performance monitoring tools. This includes Linux commands like \texttt{top} or \texttt{free}, more complex utilities like \texttt{sysstat} \cite{sysstat}, and graphical tools like \textit{Wireshark}. We have yet to try remote monitoring tools like \textit{GKrellM} \cite{gkrellm}, and other graphical tools such as \textit{Cacti} \cite{cacti} and \textit{Nagios} \cite{nagios}. We also ensured that standard Unix tools (e.g. \texttt{awk}, \texttt{grep}, \texttt{vim}, \texttt{md5sum}) work correctly.
 
-We ran each monitoring tool inside a GlassBox instance running on a virtualized Linux v4.9.0 environment. The host OS was macOS 10.4 and the hypervisor was VMware Fusion Professional Version 8.5.10. Figure 5 shows the tools on which we evaluated GlassBox, and any discrepancies between host and GlassBox outputs. The discrepancies are described and explained in the following subsections.
+We ran each monitoring tool inside a GlassBox instance running on a virtualized Linux v4.9.0 environment. The host OS was macOS 10.4 and the hypervisor was VMware Fusion Professional Version 8.5.10. Figure 6 shows the tools on which we evaluated GlassBox, and any discrepancies between host and GlassBox outputs. The discrepancies are described and explained in the following subsections.
  \begin{figure}[h]
 \begin{tabular}{ |p{35mm}|p{15mm}|p{20mm}| }
 \hline
@@ -217,7 +240,7 @@ Wireshark 2.6.7 & network & minor \\\hline
 \subsection*{6.1 \texttt{df} command}
 The \texttt{df} command calls the \texttt{statfs()} system call to get statistics for a mounted filesystem, and as expected, shows different filesystems and mount points inside and outside the container. Due to the bind-mounting, the host root is shown as filesystem `\texttt{/}' mounted on `\texttt{/}' in GlassBox, while it is shown as filesystem `\texttt{/dev/sda}' mounted on `\texttt{/}' outside GlassBox. The bytes used and bytes available of the host root are consistent.
 \subsection*{6.2 \texttt{ps} command}
-Figure 6 shows the output from running `\texttt{ps -a}' inside and outside the container. The container displays \texttt{?} for the TTY since there are no terminals or pseudo-terminals attached to processes outside of the container. The bash shell in GlassBox does not appear in the host's process tree when displayed with \texttt{ps -ajfwx},  but does appear when displaying the process tree inside GlassBox. The \texttt{pidstat} discrepancies were also due to this. This is minor since we do not expect to monitor the GlassBox instance itself. 
+Figure 7 shows the output from running `\texttt{ps -a}' inside and outside the container. The container displays \texttt{?} for the TTY since there are no terminals or pseudo-terminals attached to processes outside of the container. The bash shell in GlassBox does not appear in the host's process tree when displayed with \texttt{ps -ajfwx},  but does appear when displaying the process tree inside GlassBox. The \texttt{pidstat} discrepancies were also due to this. This is minor since we do not expect to monitor the GlassBox instance itself.
  \begin{figure}[h]
 \begin{lstlisting}[linewidth=\linewidth]
   PID TTY          TIME CMD
@@ -255,7 +278,7 @@ Figure 6 shows the output from running `\texttt{ps -a}' inside and outside the c
 \end{figure}
 
 \subsection*{6.3 \texttt{tcpdump} and Wireshark}
-We ran tcpdump inside and outside a GlassBox instance to produce packet captures. There is a delay on the order of microseconds in packet timestamps in the capture inside GlassBox. Since the DNS resolver does not work in GlassBox, the packet capture shows ip addresses rather than domain names. The full packet capture is shown in Appendix B. 
+We ran tcpdump inside and outside a GlassBox instance to produce packet captures. There is a delay on the order of microseconds in packet timestamps in the capture inside GlassBox. Since the DNS resolver does not work in GlassBox, the packet capture shows ip addresses rather than domain names. The full packet capture is shown in Appendix B.
 
 Our evaluation shows that a wide variety of monitoring tools can effectively monitor the host from inside GlassBox. The discrepancies are often in resources that GlassBox is not interested in monitoring, such as its own bash shell pid. Furthermore, we ran each monitoring tool without specifying specific pids, filesystems, or mounts, which produced extraneous output such as multiple tmpfs filesystems appearing in the \texttt{df} output. However, if we ran \texttt{df} on a specific mount or \texttt{du} on a specific directory, there would be no extraneous output.
 
@@ -291,7 +314,7 @@ With GlassBox, monitoring tools are able to run successfully and access host inf
 \clearpage
 \section*{Appendix B}
 \begin{minipage}[t]{\textwidth}
-Packet capture from downloading a file with \texttt{curl}, viewed in Wireshark inside GlassBox 
+Packet capture from downloading a file with \texttt{curl}, viewed in Wireshark inside GlassBox
 \end{minipage}
 \includegraphics[scale=0.7]{wshark}
 \clearpage
