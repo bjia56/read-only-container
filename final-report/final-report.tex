@@ -215,9 +215,9 @@ Wireshark 2.6.7 & network & minor \\\hline
  \caption{Evaluation of monitoring tools running in GlassBox}
 \end{figure}
 \subsection*{6.1 \texttt{df} command}
-The \texttt{df} command calls the \texttt{statfs()} system call to get statistics for a mounted filesystem, and unsurprisingly, shows different filesystems and mount points inside and outside the container. Due to the bind-mounting, the host root is shown as filesystem `\texttt{/}' mounted on `\texttt{/}' in GlassBox, while it is shown as filesystem `\texttt{/dev/sda}' mounted on `\texttt{/}' outside GlassBox. The bytes used and bytes available of the host root are consistent.
+The \texttt{df} command calls the \texttt{statfs()} system call to get statistics for a mounted filesystem, and as expected, shows different filesystems and mount points inside and outside the container. Due to the bind-mounting, the host root is shown as filesystem `\texttt{/}' mounted on `\texttt{/}' in GlassBox, while it is shown as filesystem `\texttt{/dev/sda}' mounted on `\texttt{/}' outside GlassBox. The bytes used and bytes available of the host root are consistent.
 \subsection*{6.2 \texttt{ps} command}
-Figure 6 shows the output from running `\texttt{ps -a}' inside and outside the container. The container displays \texttt{?} for the TTY since there are no terminals or pseudo-terminals attached to processes outside of the container. Also, processes in the container cannot be seen by the host's \texttt{ps} output. The \texttt{pidstat} discrepancies were also due to this. 
+Figure 6 shows the output from running `\texttt{ps -a}' inside and outside the container. The container displays \texttt{?} for the TTY since there are no terminals or pseudo-terminals attached to processes outside of the container. The bash shell in GlassBox does not appear in the host's process tree when displayed with \texttt{ps -ajfwx},  but does appear when displaying the process tree inside GlassBox. The \texttt{pidstat} discrepancies were also due to this. This is minor since we do not expect to monitor the GlassBox instance itself. 
  \begin{figure}[h]
 \begin{lstlisting}[linewidth=\linewidth]
   PID TTY          TIME CMD
