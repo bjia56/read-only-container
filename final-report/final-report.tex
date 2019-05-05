@@ -9,7 +9,7 @@
 \usepackage{tabu}
 \linespread{1.2}
 \definecolor{grey}{rgb}{0.96, 0.96, 0.96}
-\lstset { 
+\lstset {
   backgroundcolor=\color{grey},
   linewidth=160mm,
   basicstyle=\footnotesize\ttfamily, % Global Code Style
@@ -32,7 +32,7 @@
 
 \section*{Abstract}
 
-In modern computer systems, administrators, developers, and users often desire to monitor their operating systems for usage metrics, such as filesystem usage, CPU utilization, RAM utilization, and others. In other cases, systems administrators and developers may be interested in monitoring log files on production machines to gauge the health and execution of live applications. Monitoring can be done through automated software that report metrics to a metrics aggregator, or through a user manually running certain tools that probe the operating system for data. In either case, the system could be at risk of damage and compromise from buggy or malicious software and user negligence or error. To address this problem, we present an approach to running host monitoring tools in containers with a read-only view of the surrounding system, guaranteeing fault tolerance and protection to the host operating system.
+In modern computer systems, administrators, developers, and users often desire to monitor their operating systems for usage metrics, such as filesystem usage, CPU utilization, RAM utilization, and others. In other cases, systems administrators and developers may be interested in monitoring log files on production machines to gauge the health and execution of live applications. Monitoring can be done through automated software that report metrics to a metrics aggregator, or through a user manually running certain tools that probe the operating system for data. In either case, the system could be at risk of damage and compromise from buggy or malicious software and user negligence or error. To address this problem, we present an approach to running host monitoring tools in containers with a read-only view of the surrounding system, guaranteeing fault tolerance and protection to the host system's stability.
 
 \section*{1. Introduction}
 
@@ -46,7 +46,7 @@ Instead of fault tolerance through hardware virtualization by way of virtual mac
 
 Modern containers combine these operating system virtualization approaches to create lightweight isolated execution contexts. The industry standard choice for Linux container technology is Docker, which combines Linux \textit{cgroups}, \textit{namespaces}, \textit{capabilities}, and more using its custom container runtime, \textit{libcontainer} \cite{hykes2014libcontainer}. With the formation of the Open Container Initiative (OCI) in 2015 \cite{opencontainerinitiative}, the design and construction of container platforms became standardized with OCI's \textit{runtime-spec} and \textit{image-spec}, providing a framework for distributors to develop their own cross-compatible container implementations.
 
-In our research, we present \textit{GlassBox}, a container-based system to provide fault-tolerance and fault-containment semantics to host monitoring processes on commodity Linux operating systems. \textit{GlassBox} addresses the problems of host stability and fault tolerance that arise from executing buggy or compromised system tools and from user negligence and error when performing system administration tasks and application log monitoring through the use of modern container technologies. In the following sections, we first present background on containers and existing container technologies, then discuss a theoretical view of the host resources a fault-tolerant host monitoring system should allow access to and the resources the system should protect, then discuss the prototype architecture and implementation of \textit{GlassBox}, and close with preliminary performance benchmarks and future work.
+In our research, we present \textit{GlassBox}, a container-based system to provide fault-tolerance and fault-containment semantics to host monitoring processes on commodity Linux operating systems. \textit{GlassBox} addresses the problems of host stability and fault tolerance that arise from executing buggy or compromised system tools and from user negligence and error when performing system administration tasks and application log monitoring through the use of modern container technologies. In the following sections, we first present background on containers and existing container technologies, then discuss a theoretical view of the host resources a fault-tolerant host monitoring system should allow access to and the resources the system should protect, then discuss the prototype architecture and implementation of \textit{GlassBox}, and close with a discussion of functionality and future work.
 
 \section*{2. Containers}
 
@@ -74,7 +74,69 @@ On the other hand, a strong guarantee that the monitoring system's execution mai
 
 Traditionally, there is tension between these two requirements of accurate host monitoring and fault-tolerance. This tension can be easily exemplified by the tool \texttt{lsof}, which displays information about all of the host's open file descriptors by reading from the \texttt{/proc} filesystem. Running \texttt{lsof} with a non-superuser user can display some file descriptor information for processes running under the user, but is not permissioned to read information about processes running under other users. While executing \texttt{lsof} under a non-superuser user protects the host from harm if the \texttt{lsof} execution misbehaves or its binary has been compromised, it is clear that this protection is provided at the cost of losing access to certain information about the system. On the other hand, running \texttt{lsof} as a superuser would provide this information, but puts the host at significantly more risk if the \texttt{lsof} binary has been compromised.
 
-\section*{4. GlassBox Implementation}
+\section*{4. Requirements of Linux Tools}
+
+ \begin{figure*}[t]
+\begin{lstlisting}[linewidth=\linewidth]
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000120           0       243           read
+  0.00    0.000000           0         1           write
+  0.00    0.000000           0       257        12 open
+  0.00    0.000000           0       245           close
+  0.00    0.000000           0       125         4 stat
+  0.00    0.000000           0        18           fstat
+  0.00    0.000000           0         2           lseek
+  0.00    0.000000           0        41           mmap
+  0.00    0.000000           0        24           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         3           brk
+  0.00    0.000000           0        24           rt_sigaction
+  0.00    0.000000           0         1           rt_sigprocmask
+  0.00    0.000000           0         4         3 ioctl
+  0.00    0.000000           0        13        13 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           uname
+  0.00    0.000000           0         2           getdents
+  0.00    0.000000           0         4           readlink
+  0.00    0.000000           0         1           getrlimit
+  0.00    0.000000           0         1           geteuid
+  0.00    0.000000           0         2         2 statfs
+  0.00    0.000000           0         1           arch_prctl
+  0.00    0.000000           0         1           futex
+  0.00    0.000000           0         1           set_tid_address
+  0.00    0.000000           0         1           set_robust_list
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000120                  1018        34 total
+ \end{lstlisting}
+ \caption{\texttt{strace -c ps} output}
+\end{figure*}
+
+ \begin{figure}[t]
+\begin{lstlisting}[linewidth=\linewidth]
+open("/proc/1926/stat", O_RDONLY)       = 6
+open("/proc/1926/status", O_RDONLY)     = 6
+open("/proc/1930/stat", O_RDONLY)       = 6
+open("/proc/1930/status", O_RDONLY)     = 6
+open("/proc/1932/stat", O_RDONLY)       = 6
+open("/proc/1932/status", O_RDONLY)     = 6
+open("/proc/1934/stat", O_RDONLY)       = 6
+open("/proc/1934/status", O_RDONLY)     = 6
+ \end{lstlisting}
+ \caption{truncated \texttt{strace ps | grep open} output}
+\end{figure}
+
+GlassBox provides monitoring tools running inside the container with access to certain host information required by the specific monitoring tasks performed. To provide correct functionality of the tools, we first need to know what information each one expects from the host system.
+
+% Need to expand this section to discuss other tools (same tools listed in the results section)
+% need to discuss network tool strace
+We used the Linux utility \texttt{strace} to retrieve a syscall profile for various common system monitoring tools to determine what host resources these tools require. Sample output of \texttt{strace} (version 4.11-1ubuntu3) on the \texttt{ps} command (version 2:3.3.10-4ubuntu2.4), running on a virtualized Ubuntu 16.04.6 LTS (Linux 4.4.0-145-generic) on VirtualBox 5.2.26 r128414, can be found in Figure 1.
+
+The output of \texttt{strace} informs us that the \texttt{ps} tool largely performs filesystem operations, since the majority of the system calls utilized are filesystem-related functions (such as \texttt{open}, \texttt{read}, and \texttt{stat}). Inspecting the actual system call arguments to the \texttt{open} function provides clarity to what files are being used. Figure 2 shows truncated output of \texttt{strace} with a filter on the \texttt{open} syscall name.
+
+From this information, we conclude that these representative monitoring tools take advantage of the \texttt{proc} filesystem, which provides information about processes and select kernel state, mounted at the \texttt{/proc} endpoint. In GlassBox, we can therefore leverage this information by providing view access to \texttt{/proc} for these tools to function correctly.
+
+\section*{5. GlassBox Implementation}
 
 \begin{figure}
 \includegraphics[width=0.5\textwidth]{architecture}
@@ -85,7 +147,7 @@ GlassBox provides an isolation mechanism that enables the creation of fault-tole
 
 In building our proof-of-concept, it made sense to extend runC to implement our read-only isolation, rather than building our own container, as runC is a well-established and well-tested example of a container runtime of the Open Container Initiative \cite{opencontainerinitiative}. Additionally, the runC component of GlassBox can be easily swapped out for a different container runtime such as LXC or rkt.
 
-We discovered through the use of the Linux utility \texttt{strace} that most host-monitoring tools, from simple commands that ship with Linux (e.g. \texttt{ps} and \texttt{lsof}) to complex graphical tools (e.g. \textit{GKrellM} \cite{gkrellm}), all primarily rely on special Linux virtual filesystem mounts, such as the \texttt{proc} mount (on \texttt{/proc}) and the \texttt{sysfs} mount (on \texttt{/sys}). This implies that the commonly monitored host information (e.g. CPU load, memory, etc.) can be extracted from within the container as long as the container can read the host's \texttt{/proc} and \texttt{/sys} directories.
+As we discovered through the use of the Linux utility \texttt{strace} in Section 4, most host-monitoring tools leverage special Linux virtual filesystem mounts (e.g. the \texttt{proc} mount (on \texttt{/proc}) to read the information reported through these tools. This implies that the commonly monitored host information (e.g. CPU load, memory, etc.) can be extracted from within the container as long as the container can read the host's \texttt{/proc} and \texttt{/sys} directories.
 
 Traditionally, network traffic can be monitored with utilities such as \texttt{tcpdump}, which hooks into a ``network tap'' in the kernel's network stack using Berkley Packet Filters (BPF) \cite{bsdpacketfilter}. For a container to gain the same network information by running an unmodified \texttt{tcpdump}, the host's network packets would have to be accessible inside the container as well, while any packets produced by the container must not be routable to any host applications.
 
@@ -93,11 +155,11 @@ Finally, many host monitoring applications are interactive and present user inte
 
 Given these observations and goals, our implementation of GlassBox focuses on four features: \textit{proces isolation}, \textit{read-only filesystem}, \textit{read-only networking}, and \textit{graphical display}. In the following subsections, we discuss the details of our implementation that provide these four features.
 
-\subsection*{4.1 Process Isolation}
+\subsection*{5.1 Process Isolation}
 
 Process isolation is critical to GlassBox to provide necessary fault-containment. Our implementation provides this by instructing runC to create a \textit{pid namespace}, in which all container processes will start and execute. This ensures that processes in the container are unable to communicate directly with processes outside the container using standard inter-process communication methods such as signals and shared memory.
 
-\subsection*{4.2 Read-Only Filesystem}
+\subsection*{5.2 Read-Only Filesystem}
 
 Host monitoring processes inside GlassBox require access to the host's full filesystem to read from the \texttt{/proc} and \texttt{/sys} directories. We implement this through the use of the \texttt{bindfs} filesystem (built on FUSE) \cite{bindfs}, which presents a read-only userspace view of the host's full filesystem tree similar to a standard bind mount. By bind-mounting the host's root to the container root, we make the host root filesystem available inside the container, while by making the mount read-only, we prevent the container from modifying any of the host's files. Given access to the root file system, many tools like \texttt{top} can successfully collect statistics on the host, even when running inside GlassBox.
 
@@ -110,7 +172,7 @@ Host-monitoring tools may write temporary log files to the filesystem. GlassBox 
 \caption{Filesystem setup}
 \end{figure}
 
-\subsection*{4.3 Read-Only Networking}
+\subsection*{5.3 Read-Only Networking}
 
 GlassBox provides networking to containers via a bridge network. Each GlassBox instance has a network namespace to present the container its own network stack, routes, firewall rules, and network devices. Before the first container instance is launched, GlassBox creates the bridge network on the host and assigns an IP address. For each container, a Linux Virtual Ethernet (veth) device pair is created in the host network namespace. The host end of the pair is added to bridge network in the host network namespace, and the guest end is moved to the guest network namespace and added as an interface. The veth pair is a full duplex link, and thus acts as a tunnel between the bridge network and the guest network namespace. By default, the guest end of the veth pair is the only exposed interface in the container. Each guest-end of the veth pair is associated with an IP \texttt{192.168.10.<container id>}, where the id is a random integer between 0-255.
 
@@ -120,7 +182,7 @@ Finally, runC provides configuration options for Linux capabilities to be set in
 
 One limitation of the networking setup is that the interfaces seen by GlassBox (for example, by running \texttt{ip addr}) are different from those seen by the host. We consider this discrepancy acceptable, since practically, host monitoring tools such as \texttt{tcpdump} and \textit{Wireshark} are interested in the network traffic rather than the the interfacs themselves. Since \texttt{TEE} clones the network packets, the IP source/destination appearing in packet captures still reflect the host interfaces.
 
-\subsection*{4.4 Graphical Display}
+\subsection*{5.4 Graphical Display}
 
 GlassBox supports the execution of X11 applications inside the container and connects these processes with a display on the host. This enables users to launch full-graphical applications to visualize and interact with system information collected by host monitoring tools running from inside the container.
 
@@ -130,10 +192,10 @@ GlassBox uses this X11 behavior to emulate an X server running inside the contai
 
 The X11 protocol also defines a way for a client to authenticate to a remote server using a \texttt{.Xauthority} file \cite{xsecurityman}, traditionally stored in a user's home directory. Without information stored in this file, an application inside the container cannot authenticate with the display server. GlassBox extracts the cookie stored inside the user's \texttt{.Xauthority} file that corresponds to the X server listed in \texttt{DISPLAY} and stores it in a \texttt{.Xauthority} file in the container's home directory. We use \texttt{overlayfs} to overlay this file over the home directory inside the container and avoid causing persistent modifications to the underlying filesystem data.
 
-\section*{4. Evaluation}
+\section*{6. Evaluation}
 We evaluated GlassBox on a range of host-monitoring and application performance monitoring tools. This includes Linux commands like \texttt{top} or \texttt{free}, more complex utilities like \texttt{sysstat} \cite{sysstat}, and graphical tools like \textit{Wireshark}. We have yet to try remote monitoring tools like \textit{GKrellM} \cite{gkrellm}, and other graphical tools such as \textit{Cacti} \cite{cacti} and \textit{Nagios} \cite{nagios}. We also ensured that standard Unix tools (e.g. \texttt{awk}, \texttt{grep}, \texttt{vim}, \texttt{md5sum}) work correctly.
 
-We ran each monitoring tool inside a GlassBox instance running on a virtualized Linux v4.9.0 environment. The host OS was macOS 10.4 and the hypervisor was VMware Fusion Professional Version 8.5.10. Figure 3 shows the tools on which we evaluated GlassBox, and any discrepancies between host and GlassBox outputs. The discrepancies are described and explained in the following subsections. 
+We ran each monitoring tool inside a GlassBox instance running on a virtualized Linux v4.9.0 environment. The host OS was macOS 10.4 and the hypervisor was VMware Fusion Professional Version 8.5.10. Figure 3 shows the tools on which we evaluated GlassBox, and any discrepancies between host and GlassBox outputs. The discrepancies are described and explained in the following subsections.
  \begin{figure}[h]
 \begin{tabular}{ |p{35mm}|p{15mm}|p{20mm}| }
 \hline
@@ -152,9 +214,9 @@ Wireshark 2.6.7 & network & minor \\\hline
 \end{tabular}
  \caption{Evaluation of monitoring tools running in GlassBox}
 \end{figure}
-\subsection*{4.1 \texttt{df} command}
-The \texttt{df} command calls the \texttt{statfs()} system call to get statistics for a mounted filesystem, and unsurprisingly, shows different filesystems and mount points inside and outside the container. Due to the bind-mounting, the host root is shown as filesystem `\texttt{/}' mounted on `\texttt{/}' in GlassBox, while it is shown as filesystem `\texttt{/dev/sda}' mounted on `\texttt{/}' outside GlassBox. The bytes used and bytes available of the host root are consistent. 
-\subsection*{4.2 \texttt{ps} command}
+\subsection*{6.1 \texttt{df} command}
+The \texttt{df} command calls the \texttt{statfs()} system call to get statistics for a mounted filesystem, and unsurprisingly, shows different filesystems and mount points inside and outside the container. Due to the bind-mounting, the host root is shown as filesystem `\texttt{/}' mounted on `\texttt{/}' in GlassBox, while it is shown as filesystem `\texttt{/dev/sda}' mounted on `\texttt{/}' outside GlassBox. The bytes used and bytes available of the host root are consistent.
+\subsection*{6.2 \texttt{ps} command}
 Figure 3 shows the output from running `\texttt{ps -a}' inside and outside the container. The container displays \texttt{?} for the TTY since there are no terminals or pseudo-terminals attached to processes outside of the container. Also, processes in the container cannot be seen by the host's \texttt{ps} output.
  \begin{figure}[h]
 \begin{lstlisting}[linewidth=\linewidth]
@@ -172,7 +234,7 @@ Figure 3 shows the output from running `\texttt{ps -a}' inside and outside the c
  1863 pts/1    00:00:00 runc
  2993 pts/0    00:00:00 ps
  \end{lstlisting}
-\hspace{7.5em} a) outside Glassbox
+\hspace{7.5em} a) outside GlassBox
  \begin{lstlisting}[linewidth=\linewidth]
   PID TTY          TIME CMD
   963 ?        00:00:00 gnome-session-b
@@ -188,21 +250,21 @@ Figure 3 shows the output from running `\texttt{ps -a}' inside and outside the c
  1863 ?        00:00:00 runc
  2994 pts/0    00:00:00 ps
 \end{lstlisting}
-\hspace{7.5em} b) inside Glassbox
- \caption{ps output}
+\hspace{7.5em} b) inside GlassBox
+ \caption{\texttt{ps} output}
 \end{figure}
 
-\subsection*{4.3 \texttt{tcpdump} and Wireshark}
+\subsection*{6.3 \texttt{tcpdump} and Wireshark}
 We ran tcpdump inside and outside a GlassBox instance to produce packet captures. There is a delay on the order of microseconds in packet timestamps in the capture inside GlassBox. Since the DNS resolver does not work in GlassBox, the packet capture shows ip addresses rather than domain names.
 
-\section*{5. GlassBox Performance}
+\section*{7. GlassBox Performance}
 
 %Include information about GlassBox experimental setup, including using tini as a lightweight userspace reaper to accurately track the container's process tree (since bindfs daemonizes)
 We ran a preliminary memory profiler on GlassBox running in a Linux virtual machine. For our final results, we will run the profiler directly on a Linux machine, via Cloudlab. The memory profiler (Appendix A) traces memory usage across the launch of GlassBox, to the execution of \texttt{sleep 5} inside the container, and through the teardown of GlassBox. This execution spans across 15-20 executables that are called by GlassBox to set up the necessary namespaces, virtual network devices, X11 proxy, and others. runC itself requires 12 MB, and is the dominating memory cost. Other costs that remain consistent acrosss the execution of the container include the various structures we setup, such as the \texttt{bindfs} mount, and the \texttt{socat} connection between X11 server and client. Finally, many processes use memory during setup and teardown of the container.
 
 We will also measure startup and execution overhead of GlassBox, using a runC container without GlassBox as a baseline. We expect these measurements to be somewhat implementation dependent on the container runtime, so it may be useful to measure GlassBox with other container runtimes such as LXC.
 
-\section*{6. Conclusions}
+\section*{8. Conclusions}
 
 %Include conclusions, mention there is more work to be done to improve the container and add additional features
 With GlassBox, monitoring tools are able to run successfully and access host information in our container, with a high guarantee of fault tolerance. The implementation of GlassBox incurs some memory overhead, as shown by our profiling results. Even with these initial results, we expect that there is much future work that can be done to improve GlassBox and build new fault tolerant host monitoring systems.
