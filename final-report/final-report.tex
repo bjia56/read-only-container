@@ -278,9 +278,9 @@ Figure 7 shows the output from running `\texttt{ps -a}' inside and outside the c
 \end{figure}
 
 \subsection*{6.3 \texttt{tcpdump} and Wireshark}
-We ran tcpdump inside and outside a GlassBox instance to produce packet captures. There is a delay on the order of microseconds in packet timestamps in the capture inside GlassBox. Since the DNS resolver does not work in GlassBox, the packet capture shows ip addresses rather than domain names. The full packet capture is shown in Appendix B.
+We ran tcpdump inside and outside a GlassBox instance to produce packet captures. There is a delay on the order of microseconds in packet timestamps in the capture inside GlassBox. Since the DNS resolver does not work in GlassBox, the packet capture shows ip addresses rather than domain names. The full packet capture is shown in Appendix B.\\
 
-Our evaluation shows that a wide variety of monitoring tools can effectively monitor the host from inside GlassBox. The discrepancies are often in resources that GlassBox is not interested in monitoring, such as its own bash shell pid. Furthermore, we ran each monitoring tool without specifying specific pids, filesystems, or mounts, which produced extraneous output such as multiple tmpfs filesystems appearing in the \texttt{df} output. However, if we ran \texttt{df} on a specific mount or \texttt{du} on a specific directory, there would be no extraneous output.
+\noindent Our evaluation shows that a wide variety of monitoring tools can effectively monitor the host from inside GlassBox. The discrepancies are often in resources that GlassBox is not interested in monitoring, such as its own bash shell pid. Furthermore, we ran each monitoring tool without specifying specific pids, filesystems, or mounts, which produced extraneous output such as multiple tmpfs filesystems appearing in the \texttt{df} output. However, if we ran \texttt{df} on a specific mount or \texttt{du} on a specific directory, there would be no extraneous output.
 
 \section*{7. GlassBox Performance}
 
