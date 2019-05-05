@@ -240,7 +240,7 @@ Wireshark 2.6.7 & network & minor \\\hline
 \subsection*{6.1 \texttt{df} command}
 The \texttt{df} command calls the \texttt{statfs()} system call to get statistics for a mounted filesystem, and as expected, shows different filesystems and mount points inside and outside the container. Due to the bind-mounting, the host root is shown as filesystem ``\texttt{/}'' mounted on ``\texttt{/}'' in GlassBox, while it is shown as filesystem ``\texttt{/dev/sda}'' mounted on ``\texttt{/}'' outside GlassBox. The bytes used and bytes available of the host root are consistent.
 \subsection*{6.2 \texttt{ps} command}
-Figure 7 shows the output from running \texttt{ps -a} inside and outside the container. The container displays \texttt{?} for the TTY since there are no terminals or pseudo-terminals attached to processes outside of the container. The bash shell in GlassBox does not appear in the host's process tree when displayed with \texttt{ps -ajfwx},  but does appear when displaying the process tree inside GlassBox. The \texttt{pidstat} discrepancies were also due to this. This is minor since we do not expect to monitor the GlassBox instance itself.
+Figure 7 shows the output from running \texttt{ps -a} inside and outside the container. The container displays \texttt{?} for the TTY since there are no terminals or pseudo-terminals attached to processes outside of the container. The full process tree (displayed with \texttt{ps -ajfwx}) reflects the place from which the \texttt{ps -ajfwx} process is launched. The the container output shows the \texttt{ps} process as a grandchild of the runc process, while the host shows the \texttt{ps} process at a higher level in the tree, directly as a child of the bash process outside the container. This discrepancy is minor since we do not expect GlassBox to monitor its own bash shell and forked processes.
  \begin{figure}[h]
 \begin{lstlisting}[linewidth=\linewidth]
   PID TTY          TIME CMD
@@ -282,7 +282,7 @@ We ran tcpdump inside and outside a GlassBox instance to produce packet captures
 
 \subsection*{6.4 Evaluation Summary}
 
-Our evaluation shows that a wide variety of monitoring tools can effectively monitor the host from inside GlassBox. The discrepancies are often in resources that GlassBox is not interested in monitoring, such as its own bash shell pid. Furthermore, we ran each monitoring tool without specifying specific pids, filesystems, or mounts, which produced extraneous output such as multiple tmpfs filesystems appearing in the \texttt{df} output. However, if we ran \texttt{df} on a specific mount or \texttt{du} on a specific directory, there would be no extraneous output.
+Our evaluation shows that a wide variety of monitoring tools can effectively monitor the host from inside GlassBox. We ran each monitoring tool without specifying specific pids, filesystems, or mounts, which produced extraneous output such as multiple tmpfs filesystems appearing in the \texttt{df} output. However, if we monitored a specific mount using  \texttt{df} or a specific directory using \texttt{du}, there would be no extraneous output.
 
 \section*{7. GlassBox Performance}
 
