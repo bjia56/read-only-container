@@ -230,7 +230,7 @@ tcpdump 4.9.2&  network & minor\\\hline
 free\newline from procps-ng 3.3.12 &  memory & none \\\hline
 ps\newline from procps-ng 3.3.12 & process & minor\\\hline
 
-pidstat \newline sysstat version 11.4.3 & process & \\\hline
+pidstat \newline sysstat version 11.4.3 & process & minor \\\hline
 sar \newline sysstat version 11.4.3 &  system activity & none\\\hline
 gkrellm 2.3.10 & cpu, disk, \newline proc, net interfaces  & only net\newline interfaces \\\hline
 Wireshark 2.6.7 & network & minor \\\hline
@@ -238,9 +238,9 @@ Wireshark 2.6.7 & network & minor \\\hline
  \caption{Evaluation of monitoring tools running in GlassBox}
 \end{figure}
 \subsection*{6.1 \texttt{df} command}
-The \texttt{df} command calls the \texttt{statfs()} system call to get statistics for a mounted filesystem, and unsurprisingly, shows different filesystems and mount points inside and outside the container. Due to the bind-mounting, the host root is shown as filesystem `\texttt{/}' mounted on `\texttt{/}' in GlassBox, while it is shown as filesystem `\texttt{/dev/sda}' mounted on `\texttt{/}' outside GlassBox. The bytes used and bytes available of the host root are consistent.
+The \texttt{df} command calls the \texttt{statfs()} system call to get statistics for a mounted filesystem, and as expected, shows different filesystems and mount points inside and outside the container. Due to the bind-mounting, the host root is shown as filesystem `\texttt{/}' mounted on `\texttt{/}' in GlassBox, while it is shown as filesystem `\texttt{/dev/sda}' mounted on `\texttt{/}' outside GlassBox. The bytes used and bytes available of the host root are consistent.
 \subsection*{6.2 \texttt{ps} command}
-Figure 7 shows the output from running `\texttt{ps -a}' inside and outside the container. The container displays \texttt{?} for the TTY since there are no terminals or pseudo-terminals attached to processes outside of the container. Also, processes in the container cannot be seen by the host's \texttt{ps} output.
+Figure 7 shows the output from running `\texttt{ps -a}' inside and outside the container. The container displays \texttt{?} for the TTY since there are no terminals or pseudo-terminals attached to processes outside of the container. The bash shell in GlassBox does not appear in the host's process tree when displayed with \texttt{ps -ajfwx},  but does appear when displaying the process tree inside GlassBox. The \texttt{pidstat} discrepancies were also due to this. This is minor since we do not expect to monitor the GlassBox instance itself.
  \begin{figure}[h]
 \begin{lstlisting}[linewidth=\linewidth]
   PID TTY          TIME CMD
@@ -278,7 +278,7 @@ Figure 7 shows the output from running `\texttt{ps -a}' inside and outside the c
 \end{figure}
 
 \subsection*{6.3 \texttt{tcpdump} and Wireshark}
-We ran tcpdump inside and outside a GlassBox instance to produce packet captures. There is a delay on the order of microseconds in packet timestamps in the capture inside GlassBox. Since the DNS resolver does not work in GlassBox, the packet capture shows ip addresses rather than domain names.
+We ran tcpdump inside and outside a GlassBox instance to produce packet captures. There is a delay on the order of microseconds in packet timestamps in the capture inside GlassBox. Since the DNS resolver does not work in GlassBox, the packet capture shows ip addresses rather than domain names. The full packet capture is shown in Appendix B.
 
 \section*{7. GlassBox Performance}
 
@@ -287,7 +287,13 @@ We ran a preliminary memory profiler on GlassBox running in a Linux virtual mach
 
 We will also measure startup and execution overhead of GlassBox, using a runC container without GlassBox as a baseline. We expect these measurements to be somewhat implementation dependent on the container runtime, so it may be useful to measure GlassBox with other container runtimes such as LXC.
 
-\section*{8. Conclusions}
+\section*{8. Future Work}
+Future work could involve defining and implementing a more fine-grained security model. For example, specific syscall behaviors could be filtered through seccomp-bpf. Container resource usage could be restricted using cgroups.
+Refining the security model would require careful consideration as we would want to maintain generality to be able to run a wide variety of tools.
+
+We explored allowing GlassBox to monitor common applications that provide a specified API for ``read-only" status on a workload. A common use-case may be monitoring an application running inside a Docker instance. The Docker daemon manages a listening socket at \texttt{/var/run/docker.sock} as well as bridge network \texttt{docker0} to which containers are connected by default. We can configure the Docker daemon to listen on additional TCP, Unix, or fd socket endpoints, and expose these endpoints inside GlassBox. Another solution would be to add GlassBox to the \texttt{docker0} bridge network the same way it was added to the \texttt{runc0} bridge using a veth pair. However, these solutions would depend on the Docker configuration, for example, the bridge solution would not work for networkless containers. Using sockets can work for any application that exposes a listening socket. For example, the \texttt{mytop} tool monitors the threads and overall performance of a MySQL server, with real-time queries/second statistics. It relies on the listening endpoint exposed by the MySQL Daemon, at \texttt{/var/run/mysqld/mysqld.sock}.
+
+\section*{9. Conclusions}
 
 %Include conclusions, mention there is more work to be done to improve the container and add additional features
 With GlassBox, monitoring tools are able to run successfully and access host information in our container, with a high guarantee of fault tolerance. The implementation of GlassBox incurs some memory overhead, as shown by our profiling results. Even with these initial results, we expect that there is much future work that can be done to improve GlassBox and build new fault tolerant host monitoring systems.
@@ -302,5 +308,38 @@ With GlassBox, monitoring tools are able to run successfully and access host inf
 \AddToShipoutPicture*{
     \put(.5\paperwidth,.5\paperheight){\makebox(0,0){\includegraphics[scale=1]{memdata.eps}}}
 }
+\clearpage
+\section*{Appendix B}
+\begin{minipage}[t]{\textwidth}
+Packet capture from downloading a file with \texttt{curl}, viewed in Wireshark inside GlassBox
+\end{minipage}
+\includegraphics[scale=0.7]{wshark}
+\clearpage
+\begin{minipage}[t]{\textwidth}
+Packet capture outside GlassBox
+\begin{lstlisting}
+reading from file tcpdump-lampson.pcap, link-type EN10MB (Ethernet)
+2019-05-04 18:27:13.578649 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [P.], seq 1:141, ack 1, win 29200, length 140: HTTP: GET /~nieh/teaching/e6118/papers/1_22_lampson_hints-design.pdf HTTP/1.1
+2019-05-04 18:27:13.578856 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [.], ack 141, win 64240, length 0
+2019-05-04 18:27:13.623871 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [P.], seq 1:5497, ack 141, win 64240, length 5496: HTTP: HTTP/1.1 200 OK
+2019-05-04 18:27:13.623953 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [.], ack 5497, win 39420, length 0
+2019-05-04 18:27:13.626243 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [P.], seq 5497:15115, ack 141, win 64240, length 9618: HTTP
+[trimmed]
+2019-05-04 18:27:13.632915 IP webcluster.cs.columbia.edu.http > w4118.44786: Flags [P.], seq 34351:49465, ack 141, win 64240, length 15114: HTTP
+2019-05-04 18:27:13.632945 IP w4118.44786 > webcluster.cs.columbia.edu.http: Flags [.], ack 49465, win 64240, length 0
+\end{lstlisting}
+Packet capture inside GlassBox
+\begin{lstlisting}
+reading from file tcpdump-lampson.pcap, link-type EN10MB (Ethernet)
+2019-05-04 18:27:13.578655 IP 172.16.47.170.44786 > 128.59.11.206.http: Flags [P.], seq 1:141, ack 1, win 29200, length 140: HTTP: GET /~nieh/teaching/e6118/papers/1_22_lampson_hints-design.pdf HTTP/1.1
+2019-05-04 18:27:13.578868 IP 128.59.11.206.http > 172.16.47.170.44786: Flags [.], ack 141, win 64240, length 0
+2019-05-04 18:27:13.624088 IP 128.59.11.206.http > 172.16.47.170.44786: Flags [P.], seq 1:5497, ack 141, win 64240, length 5496: HTTP: HTTP/1.1 200 OK
+2019-05-04 18:27:13.624106 IP 172.16.47.170.44786 > 128.59.11.206.http: Flags [.], ack 5497, win 39420, length 0
+2019-05-04 18:27:13.626806 IP 128.59.11.206.http > 172.16.47.170.44786: Flags [P.], seq 5497:15115, ack 141, win 64240, length 9618: HTTP
+[trimmed]
+2019-05-04 18:27:13.633322 IP 128.59.11.206.http > 172.16.47.170.44786: Flags [P.], seq 34351:49465, ack 141, win 64240, length 15114: HTTP
+2019-05-04 18:27:13.633339 IP 172.16.47.170.44786 > 128.59.11.206.http: Flags [.], ack 49465, win 64240, length 0
+\end{lstlisting}
+\end{minipage}
 
 \end{document}
