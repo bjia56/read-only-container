@@ -218,7 +218,7 @@ GlassBox uses this X11 behavior to emulate an X server running inside the contai
 The X11 protocol also defines a way for a client to authenticate to a remote server using a \texttt{.Xauthority} file \cite{xsecurityman}, traditionally stored in a user's home directory. Without information stored in this file, an application inside the container cannot authenticate with the display server. GlassBox extracts the cookie stored inside the user's \texttt{.Xauthority} file that corresponds to the X server listed in \texttt{DISPLAY} and stores it in a \texttt{.Xauthority} file in the container's home directory. We use \texttt{overlayfs} to overlay this file over the home directory inside the container and avoid causing persistent modifications to the underlying filesystem data.
 
 \section*{6. Evaluation}
-We evaluated GlassBox on a range of host-monitoring and application performance monitoring tools, running on a virtualized Linux v4.9.0 environment. The host OS was macOS 10.4 and the hypervisor was VMware Fusion Professional Version 8.5.10. Figure 6 shows the tools on which we evaluated GlassBox, and any discrepancies between host and GlassBox outputs. The discrepancies are described and explained in the following subsections.
+We evaluated GlassBox on a range of host-monitoring and application performance monitoring tools, running on a virtualized Debian GNU/Linux 9.5 (stretch), Linux 4.9.0-7-amd64 environment. The host OS was macOS 10.4 and the hypervisor was VMware Fusion Professional Version 8.5.10. For each monitoring tool we ran, the output of the run inside GlassBox was compared to a baseline of running the tool on the Debian host. Figure 6 shows the tools on which we evaluated GlassBox, and any discrepancies between  host and GlassBox outputs. The discrepancies are described and explained in the following subsections.
  \begin{figure}[h]
 \begin{tabular}{ |p{35mm}|p{15mm}|p{20mm}| }
 \hline
@@ -232,15 +232,17 @@ ps\newline from procps-ng 3.3.12 & process & minor\\\hline
 
 pidstat \newline sysstat version 11.4.3 & process & minor \\\hline
 sar \newline sysstat version 11.4.3 &  system activity & none\\\hline
-gkrellm 2.3.10 & cpu, disk, \newline proc, net interfaces  & only net\newline interfaces \\\hline
-Wireshark 2.6.7 & network & minor \\\hline
+gkrellm 2.3.10\newline
+X.Org X Server 1.19.2 & cpu, disk, \newline proc, net interfaces  & only net\newline interfaces \\\hline
+wireshark 2.6.7\newline
+X.Org X Server 1.19.2 & network & minor \\\hline
 \end{tabular}
  \caption{Evaluation of monitoring tools running in GlassBox}
 \end{figure}
 \subsection*{6.1 \texttt{df} command}
 The \texttt{df} command calls the \texttt{statfs()} system call to get statistics for a mounted filesystem, and as expected, shows different filesystems and mount points inside and outside the container. Due to the bind-mounting, the host root is shown as filesystem ``\texttt{/}'' mounted on ``\texttt{/}'' in GlassBox, while it is shown as filesystem ``\texttt{/dev/sda}'' mounted on ``\texttt{/}'' outside GlassBox. The bytes used and bytes available of the host root are consistent.
 \subsection*{6.2 \texttt{ps} command}
-Figure 7 shows the output from running \texttt{ps -a} inside and outside the container. The container displays \texttt{?} for the TTY since there are no terminals or pseudo-terminals attached to processes outside of the container. The full process tree (displayed with \texttt{ps -ajfwx}) reflects the place from which the \texttt{ps -ajfwx} process is launched. The the container output shows the \texttt{ps} process as a grandchild of the runc process, while the host shows the \texttt{ps} process at a higher level in the tree, directly as a child of a bash process outside the container. This discrepancy is minor since we do not expect a monitoring tool GlassBox to monitor its own bash shell and forked processes, or rely on its place in the process tree.
+Figure 7 shows the output from running \texttt{ps -a} inside and outside the container. The container displays \texttt{?} for the \texttt{TTY} column since there are no terminals or pseudo-terminals attached to processes outside of the container. The full process tree (displayed with \texttt{ps -ajfwx}) reflects the place from which the \texttt{ps -ajfwx} process is launched. The container output shows the \texttt{ps} process as a grandchild of the runc process, while the host shows the \texttt{ps} process at a higher level in the tree, as the child of a bash process outside the container. This discrepancy is minor since we do not expect a monitoring tool running in GlassBox to monitor its own bash shell and forked processes or rely on the process tree output to function correctly.
  \begin{figure}[h]
 \begin{lstlisting}[linewidth=\linewidth]
   PID TTY          TIME CMD
@@ -277,8 +279,8 @@ Figure 7 shows the output from running \texttt{ps -a} inside and outside the con
  \caption{\texttt{ps} output}
 \end{figure}
 
-\subsection*{6.3 \texttt{tcpdump} and Wireshark}
-We ran \texttt{tcpdump} inside and outside a GlassBox instance to produce packet captures. There is a delay on the order of microseconds in packet timestamps in the capture inside GlassBox. Since the DNS resolver does not work in GlassBox, the packet capture shows IP addresses rather than domain names. The full packet capture is shown in Appendix B.
+\subsection*{6.3 \texttt{tcpdump} and \texttt{wireshark}}
+We ran \texttt{tcpdump} inside and outside a GlassBox instance to produce packet captures. There is a delay on the order of microseconds in packet timestamps in the capture inside GlassBox. Since the DNS resolver does not work in GlassBox, the packet capture shows IP addresses rather than domain names. The same discrepancies exist in \texttt{wireshark}. The full packet capture is shown in Appendix B.
 
 \subsection*{6.4 Evaluation Summary}
 
@@ -297,7 +299,7 @@ Future work could involve defining and implementing a more fine-grained security
 
 We explored allowing GlassBox to monitor common applications that provide a specified ``read-only'' API to gather application status on certain workloads. A common use-case may be monitoring an application running inside a Docker instance. The Docker daemon manages a listening socket at \texttt{/var/run/docker.sock} as well as bridge network \texttt{docker0} to which containers are connected by default. We can configure the Docker daemon to listen on additional TCP, Unix, or fd socket endpoints, and expose these endpoints inside GlassBox.
 
-Another solution would be to add GlassBox to the \texttt{docker0} bridge network the same way it was added to the \texttt{runc0} bridge using a veth pair. However, these solutions would depend on the Docker configuration; for example, the bridge solution would not work for networkless containers. Using sockets can work for any application that exposes a listening socket. For example, the \texttt{mytop} tool monitors the threads and overall performance of a MySQL server, with real-time queries/second statistics. It relies on the listening endpoint exposed by the MySQL Daemon at \texttt{/var/run/mysqld/mysqld.sock}.
+Another solution would be to add GlassBox to the \texttt{docker0} bridge network the same way it was added to the \texttt{runc0} bridge using a veth pair. However, these solutions would depend on the Docker configuration; For example, the bridge solution would not work for a Docker setup with user-defined bridge networks or networkless containers. Using sockets can work for any application that exposes a listening socket. For example, the \texttt{mytop} tool monitors the threads and overall performance of a MySQL server, with real-time queries/second statistics. It relies on the listening endpoint exposed by the MySQL Daemon at \texttt{/var/run/mysqld/mysqld.sock}.
 
 We also expect that the introduction of \texttt{seccomp-bpf} traps to userspace \cite{seccompuserspace} will greatly improve future fault-tolerant host monitoring systems through the use of advanced syscall filter decision logic and syscall emulation.
 
